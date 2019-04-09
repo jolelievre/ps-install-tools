@@ -4,6 +4,8 @@ insert_data() {
     echo Dropping database..
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     cd $targetFolder
+    echo Removing cache files..
+    rm -fR var/cache/*
     echo Inserting fixtures data...
     php install-dev/index_cli.php \
         --language=en \
