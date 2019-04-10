@@ -132,5 +132,10 @@ else
 fi
 
 echo
+echo "Your Prestashop was installed at:"
+echo $targetFolder
+echo
 echo "Your Prestashop instance is available at the following address:"
 echo $targetUrl
+echo $targetUrl/admin-dev
+echo
