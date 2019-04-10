@@ -87,7 +87,7 @@ vhostFilePath="/usr/local/etc/httpd/extra/sites-available/$targetDomain.conf"
 if test -f $vhostFilePath; then
     echo "Vhost config is already available"
 else
-    baseLog="/Users/jLelievre/www/var/logs/prestashop-"
+    baseLog="$HOME/www/var/logs/prestashop-"
     echo "Setting vhost config in $vhostFilePath:"
     cat > $vhostFilePath <<- EOM
 <VirtualHost *:80>

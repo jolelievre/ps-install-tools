@@ -1,5 +1,5 @@
 parameters:
-    baseFolder: "/Users/jLelievre/www/prestashop-"
+    baseFolder: "~/www/prestashop-"
     baseDomain: "local.prestashop-"
     baseDatabase: "prestashop-"
     upstreamGithub: "git@github.com:PrestaShop/PrestaShop.git"

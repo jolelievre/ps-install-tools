@@ -1,6 +1,6 @@
 #!/bin/sh
 
-baseFolder="/Users/jLelievre/www/prestashop-"
+baseFolder="$HOME/www/prestashop-"
 baseDomain="local.prestashop-"
 baseDatabase="prestashop-"
 
