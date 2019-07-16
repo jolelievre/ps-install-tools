@@ -1,6 +1,8 @@
 #!/bin/sh
 
-BASEDIR=$(dirname "$0")/..
+if [ -z $BASEDIR ]; then
+    BASEDIR=$(dirname "$0")/..
+fi
 source $BASEDIR/tools/tools.sh
 
 load_config
@@ -12,6 +14,7 @@ else
     echo "Example: suffix = module => folder = ${baseFolder}module, domain = ${baseDomain}module"
     echo
     read -p "Suffix: " suffix
+    echo
 fi
 
 targetFolder=${baseFolder}${suffix}
@@ -20,7 +23,6 @@ targetUrl="http://${targetDomain}"
 targetDatabase=${baseDatabase}${suffix}
 targetName="Prestashop ${suffix}"
 
-echo
 echo "These are the $suffix instance informations:"
 echo "Project folder: $targetFolder"
 echo "Project url: $targetUrl"
