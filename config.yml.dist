@@ -1,6 +1,9 @@
-parameters:
-    baseFolder: "~/www/prestashop-"
-    baseDomain: "local.prestashop-"
-    baseDatabase: "prestashop-"
-    upstreamGithub: "git@github.com:PrestaShop/PrestaShop.git"
-    forkedGithub: "git@github.com:jolelievre/PrestaShop.git"
+baseFolder: "~/www/prestashop-"
+baseDomain: "local.prestashop-"
+baseDatabase: "prestashop-"
+upstreamGithub: "git@github.com:PrestaShop/PrestaShop.git"
+forkedGithub: "git@github.com:jolelievre/PrestaShop.git"
+smtpServer: "in-v3.mailjet.com"
+smtpUser: ""
+smtpPass: ""
+smtpPort: 25

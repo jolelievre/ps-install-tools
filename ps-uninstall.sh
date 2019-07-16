@@ -1,31 +1,11 @@
 #!/bin/sh
 
-baseFolder="$HOME/www/prestashop-"
-baseDomain="local.prestashop-"
-baseDatabase="prestashop-"
-
 echo "Uninstalling a new local prestashop instance"
 echo
 
-if test $# -gt 0; then
-    suffix=$1
-else
-    echo "Enter a suffix to identity your installation"
-    echo "Example: suffix = module => folder = ${baseFolder}module, domain = ${baseDomain}module"
-    echo
-    read -p "Suffix: " suffix
-fi
+BASEDIR=$(dirname "$0")
+source $BASEDIR/tools/config.sh
 
-targetFolder=${baseFolder}${suffix}
-targetDomain=${baseDomain}${suffix}
-targetUrl="http://${targetDomain}"
-targetDatabase=${baseDatabase}${suffix}
-
-echo
-echo "Theses are the $suffix instance informations:"
-echo "Project folder: $targetFolder"
-echo "Project url: $targetUrl"
-echo "Database: $targetDatabase"
 echo
 echo "WARNING: if you confirm the uninstallation all data and files from this instance will be lost"
 read -n 1 -p "Do you confirm uninstallation? [Y/n] " confirm

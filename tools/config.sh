@@ -1,11 +1,9 @@
 #!/bin/sh
 
-baseFolder="$HOME/www/prestashop-"
-baseDomain="local.prestashop-"
-baseDatabase="prestashop-"
+BASEDIR=$(dirname "$0")/..
+source $BASEDIR/tools/tools.sh
 
-echo "Installing a new local prestashop instance"
-echo
+load_config
 
 if test $# -gt 0; then
     suffix=$1
@@ -22,11 +20,8 @@ targetUrl="http://${targetDomain}"
 targetDatabase=${baseDatabase}${suffix}
 targetName="Prestashop ${suffix}"
 
-upstreamGithub="git@github.com:PrestaShop/PrestaShop.git"
-forkedGithub="git@github.com:jolelievre/PrestaShop.git"
-
 echo
-echo "Theses are the new instance informations:"
+echo "These are the $suffix instance informations:"
 echo "Project folder: $targetFolder"
 echo "Project url: $targetUrl"
 echo "Database name: $targetDatabase"
