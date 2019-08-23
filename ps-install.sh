@@ -31,23 +31,40 @@ if test -d $targetFolder; then
     stepsIndex=$(($stepsIndex+1))
 else
     echo "$stepsIndex-a / $stepsNb: Prepare folder project in $targetFolder"
-    echo "Cloning $forkedGithub into $targetFolder"
+    # Get PrestaShop cloned in temporary folder
+    tmpPrestaShopFolder="$tmpFolder/PrestaShop"
+    if ! test -d $tmpPrestaShopFolder; then
+        echo "Cloning repository $forkedGithub into $tmpPrestaShopFolder"
+        cd $tmpFolder
+        git clone $forkedGithub PrestaShop
+        cd $tmpPrestaShopFolder
+        git remote add upstream $upstreamGithub
+    else
+        echo "Temporary backup of PrestaShop was found in $tmpPrestaShopFolder, no need to clone it"
+    fi
+
+    # Update the backup repository and copy it to target folder
+    echo "Updating PrestaShop folder"
+    cd $tmpPrestaShopFolder
+    git fetch upstream
+    git fetch origin
+
+    echo "Copying PrestaShop repository into $targetFolder"
+    cp -R $tmpPrestaShopFolder $targetFolder
+
     parentFolder=$(dirname $targetFolder)
     cloneFolder=$(basename $targetFolder)
-    cd $parentFolder
-    git clone $forkedGithub $cloneFolder
-    cd $targetFolder
-    git remote add upstream $upstreamGithub
-    git fetch upstream
 
+    cd $targetFolder
     # Select the branch to start from
     if test $# -gt 1; then
         branch=$2
         echo "$stepsIndex-b / $stepsNb: Selecting the branch $branch as a starting point"
     else
         availableBranches=`git branch -a | grep remotes/upstream | sed s_remotes/upstream/__ | sed s_\ __g`
+        forkBranches=`git branch -a | grep remotes/origin | sed s_remotes/origin/__ | sed s_\ __g`
         echo "$stepsIndex-b / $stepsNb: Selecting the branch you want to start from (default: develop)"
-        echo "Available branches:"
+        echo "Available upstream branches:"
         echo $availableBranches
         echo
 
@@ -64,6 +81,11 @@ else
         git checkout -b $branch upstream/$branch
     fi
     git pull
+    if test "$branch" = "1.6.1.x"; then
+        echo "Install submodules for PrestaShop 1.6"
+        git submodule init
+        git submodule update
+    fi
     echo
     stepsIndex=$(($stepsIndex+1))
 fi
@@ -72,7 +94,11 @@ echo
 # 2- Run composer install
 echo "$stepsIndex / $stepsNb: Install vendors"
 cd $targetFolder
-php -d memory_limit=-1 `which composer` install
+if ! test -f composer.json; then
+    echo "No composer command to run"
+else
+    php -d memory_limit=-1 `which composer` install
+fi
 stepsIndex=$(($stepsIndex+1))
 echo
 

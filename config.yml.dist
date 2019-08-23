@@ -1,4 +1,5 @@
 baseFolder: "$HOME/www/prestashop-"
+tmpFolder: "/tmp"
 baseDomain: "local.prestashop-"
 baseDatabase: "prestashop-"
 upstreamGithub: "git@github.com:PrestaShop/PrestaShop.git"
