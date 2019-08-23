@@ -51,12 +51,12 @@ load_config() {
 }
 
 insert_data() {
-    echo Dropping database..
+    echo Dropping database $targetDatabase...
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     cd $targetFolder
     echo Removing cache files..
     rm -fR var/cache/*
-    echo Inserting fixtures data...
+    echo "Inserting fixtures data for domain $targetDomain database $targetDatabase..."
     php install-dev/index_cli.php \
         --language=en \
         --country=fr \

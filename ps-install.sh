@@ -1,8 +1,10 @@
 #!/bin/sh
 
+echo "Installing a new local prestashop instance"
+echo
+
 BASEDIR=$(dirname "$0")
 source $BASEDIR/tools/config.sh
-source $BASEDIR/tools/tools.sh
 
 if test $# -gt 1; then
     echo "Branch starting point: $2"
