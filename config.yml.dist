@@ -8,3 +8,5 @@ smtpServer: "in-v3.mailjet.com"
 smtpUser: ""
 smtpPass: ""
 smtpPort: 25
+email: "jonathan.lelievre@prestashop.com"
+password: "prestashop"

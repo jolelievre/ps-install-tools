@@ -81,11 +81,6 @@ else
         git checkout -b $branch upstream/$branch
     fi
     git pull
-    if test "$branch" = "1.6.1.x"; then
-        echo "Install submodules for PrestaShop 1.6"
-        git submodule init
-        git submodule update
-    fi
     echo
     stepsIndex=$(($stepsIndex+1))
 fi
@@ -94,8 +89,12 @@ echo
 # 2- Run composer install
 echo "$stepsIndex / $stepsNb: Install vendors"
 cd $targetFolder
+
+# No composer is for 1.6 version where modules are installed thanks to git submodules
 if ! test -f composer.json; then
-    echo "No composer command to run"
+    echo "Install git submodules"
+    git submodule init
+    git submodule update
 else
     php -d memory_limit=-1 `which composer` install
 fi
@@ -119,7 +118,7 @@ else
     echo "Setting vhost config in $vhostFilePath:"
     cat > $vhostFilePath <<- EOM
 <VirtualHost *:80>
-    ServerAdmin jonathan.lelievre@prestashop.com
+    ServerAdmin ${email}
     DocumentRoot "${targetFolder}"
     ServerName "${targetDomain}"
     ServerAlias "${targetDomain}"

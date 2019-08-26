@@ -117,8 +117,8 @@ insert_data() {
         --firstname=Jo \
         --lastname=LELIEVRE \
         --name="$targetName" \
-        --email=jonathan.lelievre@prestashop.com \
-        --password=prestashop
+        --email=$email \
+        --password=$password
 }
 insert_data
 
@@ -135,7 +135,7 @@ else
     echo "Setting vhost config in $vhostFilePath:"
     cat > $vhostFilePath <<- EOM
 <VirtualHost *:80>
-    ServerAdmin jonathan.lelievre@prestashop.com
+    ServerAdmin ${email}
     DocumentRoot "${targetFolder}"
     ServerName "${targetDomain}"
     ServerAlias "${targetDomain}"

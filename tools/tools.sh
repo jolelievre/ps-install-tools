@@ -69,8 +69,8 @@ insert_data() {
         --firstname=Jo \
         --lastname=LELIEVRE \
         --name="$targetName" \
-        --email=jonathan.lelievre@prestashop.com \
-        --password=prestashop
+        --email=$email \
+        --password=$password
     if [ "x$smtpUser" != "x" ] && [ "x$smtpPass" != "x" ]; then
         echo "Setup SMTP settings"
         echo "SMTP server: $smtpServer"
