@@ -56,6 +56,8 @@ insert_data() {
     cd $targetFolder
     echo Removing cache files..
     rm -fR var/cache/*
+    echo Warmup cache...
+    php -d memory_limit=-1 ./bin/console cache:clear
     echo "Inserting fixtures data for domain $targetDomain database $targetDatabase..."
     php install-dev/index_cli.php \
         --language=en \
