@@ -21,4 +21,5 @@ if test -d $modulePath; then
     zip -r $modulePath $moduleFolderPath
 fi
 
+cd $BASEDIR
 npm run install-module $targetUrl/admin-dev $modulePath
