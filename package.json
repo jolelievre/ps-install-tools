@@ -9,7 +9,8 @@
     "url": "git+https://github.com/olelievre/ps-install-tools.git"
   },
   "scripts": {
-    "install-module": "node js/install-module.js"
+    "install-module": "node js/install-module.js",
+    "launch-upgrade": "node js/launch-upgrade.js"
   },
   "dependencies": {
     "js-yaml": "^3.13.1",

@@ -22,6 +22,9 @@ echo
 stepsIndex=1
 stepsNb=4
 
+echo "Stoping apache"
+sudo apachectl -k stop
+
 ## 1- Remove project folder
 echo "$stepsIndex / $stepsNb: Removing folder $targetFolder"
 rm -fR $targetFolder
@@ -37,8 +40,8 @@ echo "$stepsIndex / $stepsNb: Removing apache config for $targetDomain"
 vhostFilePath="/usr/local/etc/httpd/extra/sites-available/$targetDomain.conf"
 enabledVhostFilePath="/usr/local/etc/httpd/extra/sites-enabled/$targetDomain.conf"
 rm -f $vhostFilePath $enabledVhostFilePath
+
 echo "Restarting apache"
-sudo apachectl -k stop
 sleep 2
 sudo apachectl start
 stepsIndex=$(($stepsIndex+1))
