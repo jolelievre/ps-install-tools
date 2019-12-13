@@ -31,6 +31,12 @@ if ! test -d $targetModulePath; then
 fi
 cp -R $moduleFolderPath/* $targetModulePath
 
-# This is for 1.6 versions, we should check the target version an run the command for 1.7 versions
-cd $BASEDIR
-npm run install-module $targetUrl/admin-dev $modulePath
+if test -f $targetFolder/bin/console; then
+    # In 1.7 we have use a command to install the module
+    cd $targetFolder
+    php ./bin/console prestashop:module install $moduleName
+else
+    # This is for 1.6 versions, we should check the target version an run the command for 1.7 versions
+    cd $BASEDIR
+    npm run install-module $targetUrl/admin-dev $modulePath
+fi

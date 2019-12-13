@@ -101,14 +101,7 @@ fi
 stepsIndex=$(($stepsIndex+1))
 echo
 
-# 3- Insert data in database
-echo "$stepsIndex / $stepsNb: Install default PrestashopData in database: $targetDatabase"
-insert_data
-
-stepsIndex=$(($stepsIndex+1))
-echo
-
-# 4- Prepare apache config
+# 3- Prepare apache config
 echo "$stepsIndex / $stepsNb: Prepare apache vhost"
 vhostFilePath="/usr/local/etc/httpd/extra/sites-available/$targetDomain.conf"
 if test -f $vhostFilePath; then
@@ -147,8 +140,7 @@ fi
 stepsIndex=$(($stepsIndex+1))
 echo
 
-
-# 5- Updating /etc/hosts
+# 4- Updating /etc/hosts
 hostEnabled=$(cat /etc/hosts | grep $targetDomain)
 
 if test "x" = "x$hostEnabled"; then
@@ -157,6 +149,16 @@ if test "x" = "x$hostEnabled"; then
 else
     echo "$stepsIndex / $stepsNb: Domain is already present in /etc/hosts"
 fi
+stepsIndex=$(($stepsIndex+1))
+echo
+
+# 5- Insert data in database (this step must be done once the site is accessible via apache because some url calls are made during install)
+echo "$stepsIndex / $stepsNb: Install default PrestashopData in database: $targetDatabase"
+insert_data
+
+stepsIndex=$(($stepsIndex+1))
+echo
+
 
 echo
 echo "Your Prestashop was installed at:"

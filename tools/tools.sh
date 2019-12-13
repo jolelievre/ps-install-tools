@@ -51,8 +51,6 @@ load_config() {
 }
 
 insert_data() {
-    echo Dropping database $targetDatabase...
-    mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     cd $targetFolder
     echo Removing cache files..
     rm -fR var/cache/*
@@ -60,6 +58,8 @@ insert_data() {
         echo Warmup cache...
         php -d memory_limit=-1 ./bin/console cache:clear
     fi
+    echo Dropping database $targetDatabase...
+    mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     echo "Inserting fixtures data for domain $targetDomain database $targetDatabase..."
     php install-dev/index_cli.php \
         --language=en \
