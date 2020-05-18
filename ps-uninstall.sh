@@ -10,10 +10,10 @@ echo
 echo "WARNING: if you confirm the uninstallation all data and files from this instance will be lost"
 read -n 1 -p "Do you confirm uninstallation? [Y/n] " confirm
 
-if test "x$confirm" = "xn"; then
+if test "$confirm" = "n"; then
     exit 1
 else
-    if test "x$confirm" = "xN"; then
+    if test "$confirm" = "N"; then
         exit 1
     fi
 fi

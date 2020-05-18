@@ -12,10 +12,10 @@ fi
 echo
 read -n 1 -p "Do you confirm installation? [Y/n] " confirm
 
-if test "x$confirm" = "xn"; then
+if test "$confirm" = "n"; then
     exit 1
 else
-    if test "x$confirm" = "xN"; then
+    if test "$confirm" = "N"; then
         exit 1
     fi
 fi
@@ -70,7 +70,7 @@ else
 
         read -p "Which branch do you wish to start from? [develop] " branch
     fi
-    if test "x$branch" = "x"; then
+    if test "$branch" = ""; then
         branch="develop"
     fi
 
@@ -148,7 +148,7 @@ echo
 # 4- Updating /etc/hosts
 hostEnabled=$(cat /etc/hosts | grep $targetDomain)
 
-if test "x" = "x$hostEnabled"; then
+if test "" = "$hostEnabled"; then
     echo "$stepsIndex / $stepsNb: Updating /etc/hosts file"
     echo "127.0.0.1       $targetDomain" | sudo tee -a /etc/hosts
 else

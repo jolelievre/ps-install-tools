@@ -21,7 +21,7 @@ ask_config() {
         echo
     fi
     read -p "$configName [$defaultValue]: " userValue
-    if test "x$userValue" = "x"; then
+    if test "$userValue" = ""; then
         userValue=$defaultValue
     fi
     echo "$configName: \"$userValue\"" >> $BASEDIR/config.yml
@@ -75,7 +75,7 @@ insert_data() {
         --name="$targetName" \
         --email=$email \
         --password=$password
-    if [ "x$smtpUser" != "x" ] && [ "x$smtpPass" != "x" ]; then
+    if [ "$smtpUser" != "" ] && [ "$smtpPass" != "" ]; then
         echo "Setup SMTP settings"
         echo "SMTP server: $smtpServer"
         echo "SMTP user: $smtpUser"
@@ -87,6 +87,8 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPass\" WHERE \`name\` = \"PS_MAIL_PASSWD\""
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
+    echo Warmup classes cache
+    wget $targetUrl/admin-dev/index.php
 }
 
 # Returns 0 if assets building is required
