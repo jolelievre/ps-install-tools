@@ -28,6 +28,7 @@ const loginBO = async (page) => {
   await page.type('#passwd', config.password);
   await page.click('button[name="submitLogin"]');
   await page.waitForNavigation({waitUntil: 'domcontentloaded'});
+  console.log('Login to BO successful');
 };
 
 const run = async () => {

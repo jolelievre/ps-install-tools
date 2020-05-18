@@ -10,7 +10,8 @@
   },
   "scripts": {
     "install-module": "node js/install-module.js",
-    "launch-upgrade": "node js/launch-upgrade.js"
+    "launch-upgrade": "node js/launch-upgrade.js",
+    "warmup-backoffice": "node js/warmup-backoffice.js"
   },
   "dependencies": {
     "js-yaml": "^3.13.1",

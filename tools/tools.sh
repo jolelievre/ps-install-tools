@@ -87,8 +87,14 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPass\" WHERE \`name\` = \"PS_MAIL_PASSWD\""
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
-    echo Warmup classes cache
-    wget $targetUrl/admin-dev/index.php
+    
+    echo Warmup frontend cache
+    curl $targetUrl 2> /dev/null > /dev/null
+
+    echo Warmup backend cache
+    pushd $BASEDIR
+    npm run warmup-backoffice ${suffix}
+    popd
 }
 
 # Returns 0 if assets building is required
