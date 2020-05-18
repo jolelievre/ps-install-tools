@@ -98,7 +98,8 @@ if ! test -f composer.json; then
 else
     php -d memory_limit=-1 `which composer` install
 fi
-if test -f Makefile; then
+check_build_assets_required
+if test $? = 0; then
     echo "Build assets"
     make assets
 fi

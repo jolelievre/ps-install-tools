@@ -88,3 +88,23 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
 }
+
+# Returns 0 if assets building is required
+check_build_assets_required() {
+    # No Makefile present, so no build possible
+    if ! test -f $targetFolder/Makefile; then
+        return 1
+    fi
+    if ! test -d $targetFolder/admin-dev/themes/default/public; then
+        return 0
+    fi
+    if ! test -d $targetFolder/admin-dev/themes/new-theme/public; then
+        return 0
+    fi
+    if ! test -f $targetFolder/themes/core.js; then
+        return 0
+    fi
+
+    # All required assets have been checked so no build needed
+    return 1
+}
