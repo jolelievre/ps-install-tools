@@ -61,6 +61,20 @@ insert_data() {
     echo Dropping database $targetDatabase...
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     echo "Inserting fixtures data for domain $targetDomain database $targetDatabase..."
+    echo "Command used: php install-dev/index_cli.php \
+        --language=en \
+        --country=fr \
+        --domain=$targetDomain \
+        --base_uri=/ \
+        --db_server=127.0.0.1 \
+        --db_user=root \
+        --db_name=$targetDatabase \
+        --db_create=1 \
+        --firstname=Jo \
+        --lastname=LELIEVRE \
+        --name="$targetName" \
+        --email=$email \
+        --password=$password"
     php install-dev/index_cli.php \
         --language=en \
         --country=fr \
