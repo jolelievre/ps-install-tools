@@ -123,7 +123,7 @@ const searchForShop = async (page, shopName) => {
 
 const run = async () => {
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox'],
     });
     const page = await browser.newPage();
