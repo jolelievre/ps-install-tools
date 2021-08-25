@@ -90,9 +90,9 @@ const createShop = async (page, shopName, shopGroupId, shopColor) => {
         return document.querySelector('#subtab-AdminShopGroup a').href;
     });
     await page.goto(shopGroupUrl);
-    const shopExists = await searchForShop(page, shopName);
+    const shopUrlExists = await searchForShopUrl(page, shopName);
 
-    if (!shopExists) {
+    if (!shopUrlExists) {
         await page.click('#page-header-desc-shop_group-new_2');
         await page.waitForSelector('#shop_form');
         await page.type('#name', shopName);
@@ -104,20 +104,59 @@ const createShop = async (page, shopName, shopGroupId, shopColor) => {
     } else {
         console.log(`Shop "${shopName}" already exists`);
     }
+
+    await setUpShopUrl(page, shopName);
 }
 
-const searchForShop = async (page, shopName) => {
+const setUpShopUrl = async (page, shopName) => {
+    const shopUrl = await searchForShopUrl(page, shopName);
+    if (shopUrl) {
+        await page.goto(shopUrl);
+        const editionUrl = await searchForShopEditionUrl(page, shopName);
+        if (editionUrl) {
+            console.log(`Set up url for shop ${shopName}`);
+            await page.goto(editionUrl);
+            await page.waitForSelector('#shop_url_form');
+            await page.type('#virtual_uri', shopName.toLowerCase().replace(/\s/g, "-"));
+            await page.click('#shop_url_form_submit_btn_1');
+            await page.waitForSelector('div.alert.alert-success');
+        } else {
+            console.log(`No need to edit url for shop "${shopName}"`);
+        }
+    } else {
+        console.error('Cannot set url for nonexistent shop');
+    }
+}
+
+const searchForShopUrl = async (page, shopName) => {
     return await page.evaluate((shopName) => {
         const nameItems = document.querySelectorAll('.tree-item-name');
 
-        let matchesName = false;
+        let shopUrl = null;
         nameItems.forEach((treeItem) => {
             if (treeItem.textContent.trim() === shopName) {
-                matchesName = true;
+                shopUrl = treeItem.querySelector('a').href;
             }
         })
 
-        return matchesName;
+        return shopUrl;
+    }, shopName);
+}
+
+const searchForShopEditionUrl = async (page, shopName) => {
+    return await page.evaluate((shopName) => {
+        const warningLinks = document.querySelectorAll('.multishop_warning');
+
+        let shopEditionUrl = null;
+        warningLinks.forEach((warningLink) => {
+            const row = warningLink.closest('tr');
+            const nameColumn = row.querySelector('td:nth-child(2)')
+            if (nameColumn.textContent.trim() === shopName) {
+                shopEditionUrl = warningLink.href;
+            }
+        })
+
+        return shopEditionUrl;
     }, shopName);
 }
 
