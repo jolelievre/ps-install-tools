@@ -2,8 +2,7 @@
   "name": "ps-install-tools",
   "version": "1.0.0",
   "description": "Library of scripts to help install/uninstall a PrestaSHop instance",
-  "directories": {
-  },
+  "directories": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/olelievre/ps-install-tools.git"
@@ -11,7 +10,8 @@
   "scripts": {
     "install-module": "node js/install-module.js",
     "launch-upgrade": "node js/launch-upgrade.js",
-    "warmup-backoffice": "node js/warmup-backoffice.js"
+    "warmup-backoffice": "node js/warmup-backoffice.js",
+    "install-multi-shop-data": "node js/install-multi-shop.js"
   },
   "dependencies": {
     "js-yaml": "^3.13.1",

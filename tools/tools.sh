@@ -130,3 +130,8 @@ check_build_assets_required() {
     # All required assets have been checked so no build needed
     return 1
 }
+
+install_multi_shop_data() {
+  cd $BASEDIR
+  npm run install-multi-shop-data $targetUrl/admin-dev
+}

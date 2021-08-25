@@ -7,7 +7,8 @@ const yaml = require('js-yaml');
 const fs   = require('fs');
 const path   = require('path');
 const puppeteer = require('puppeteer');
- 
+const tools = require('./tools');
+
 // Get document, or throw exception on error
 try {
   var config = yaml.safeLoad(fs.readFileSync(__dirname + '/../config.yml', 'utf8'));
@@ -23,14 +24,6 @@ const moduleName = path.basename(modulePath, '.zip');
 
 console.log('Install module from ' + moduleName + ' in PrestaShop ' + backOfficeUrl);
 
-const loginBO = async (page) => {
-  await page.type('#email', config.email);
-  await page.type('#passwd', config.password);
-  await page.click('button[name="submitLogin"]');
-  await page.waitForNavigation({waitUntil: 'domcontentloaded'});
-  console.log('Login to BO successful');
-};
-
 const run = async () => {
   const browser = await puppeteer.launch({
     headless: false,
@@ -41,7 +34,7 @@ const run = async () => {
   // Login in BO
   console.log('Login in BO');
   await page.goto(backOfficeUrl, {waitUntil: 'networkidle0'});
-  await loginBO(page);
+  await tools.loginBO(page);
   const modulePageUrl = await page.evaluate(() => {
     return document.querySelector('#subtab-AdminModules a').href;
   });
