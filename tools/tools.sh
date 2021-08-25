@@ -89,6 +89,8 @@ insert_data() {
         --name="$targetName" \
         --email=$email \
         --password=$password
+
+    # Preset SMTP settings
     if [ "$smtpUser" != "" ] && [ "$smtpPass" != "" ]; then
         echo "Setup SMTP settings"
         echo "SMTP server: $smtpServer"
@@ -101,6 +103,9 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPass\" WHERE \`name\` = \"PS_MAIL_PASSWD\""
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
+
+    # Enable all experimental features by default
+    mysql -u root -D $targetDatabase -e "UPDATE \`ps_feature_flag\` SET \`state\` = \"1\""
     
     echo Warmup frontend cache
     curl $targetUrl 2> /dev/null > /dev/null
