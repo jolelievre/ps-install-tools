@@ -6,9 +6,35 @@ echo
 BASEDIR=$(dirname "$0")
 source $BASEDIR/tools/config.sh
 
+echo "Upstream repository: $upstreamGithub"
+echo "Origin repository: $originGithub"
+
+contributor=''
+branch=''
 if test $# -gt 1; then
-    echo "Branch starting point: $2"
+    if [[ $2 == *":"* ]]; then
+        IFS=':'
+        read -a branches <<< "$2"
+        contributor=${branches[0]}
+        contributorGithub="git@github.com:$contributor/PrestaShop.git"
+        IFS=' '
+
+        # If the contributor matches the origin repository we use origin as the contributor
+        if test "$contributorGithub" = "$originGithub"; then
+            contributor='origin'
+        fi
+        branch=${branches[1]}
+    else
+        branch=$2
+    fi
+    echo "Working branch: $branch"
 fi
+
+if ! test "$contributorGithub" = ""; then
+    echo "Contributor: $contributor"
+    echo "Contributor repository: $contributorGithub"
+fi
+
 echo
 read -n 1 -p "Do you confirm installation? [Y/n] " confirm
 
@@ -27,16 +53,16 @@ stepsNb=5
 
 ## 1- Clone project if the folder does not exist
 if test -d $targetFolder; then
-    echo "$stepsIndex / $stepsNb: Folder $targetFolder already exists, no need to create it"
+    echo "$stepsIndex-a / $stepsNb: Folder $targetFolder already exists, no need to create it"
     stepsIndex=$(($stepsIndex+1))
 else
     echo "$stepsIndex-a / $stepsNb: Prepare folder project in $targetFolder"
     # Get PrestaShop cloned in temporary folder
     tmpPrestaShopFolder="$tmpFolder/PrestaShop"
     if ! test -d $tmpPrestaShopFolder; then
-        echo "Cloning repository $forkedGithub into $tmpPrestaShopFolder"
+        echo "Cloning repository $originGithub into $tmpPrestaShopFolder"
         cd $tmpFolder
-        git clone $forkedGithub PrestaShop
+        git clone $originGithub PrestaShop
         cd $tmpPrestaShopFolder
         git remote add upstream $upstreamGithub
     else
@@ -49,41 +75,67 @@ else
     git fetch upstream
     git fetch origin
 
+    echo "Link default branch to upstream"
+    git checkout develop
+    git branch --set-upstream-to=upstream/develop
+
     echo "Copying PrestaShop repository into $targetFolder"
     cp -R $tmpPrestaShopFolder $targetFolder
 
     parentFolder=$(dirname $targetFolder)
     cloneFolder=$(basename $targetFolder)
+fi
 
-    cd $targetFolder
-    # Select the branch to start from
-    if test $# -gt 1; then
-        branch=$2
-        echo "$stepsIndex-b / $stepsNb: Selecting the branch $branch as a starting point"
-    else
-        availableBranches=`git branch -a | grep remotes/upstream | sed s_remotes/upstream/__ | sed s_\ __g`
-        forkBranches=`git branch -a | grep remotes/origin | sed s_remotes/origin/__ | sed s_\ __g`
-        echo "$stepsIndex-b / $stepsNb: Selecting the branch you want to start from (default: develop)"
-        echo "Available upstream branches:"
-        echo $availableBranches
-        echo
+cd $targetFolder
+# Select the branch to start from
+if test "$branch" = ""; then
+    availableBranches=`git branch -a | grep remotes/upstream | sed s_remotes/upstream/__ | sed s_\ __g`
+    forkBranches=`git branch -a | grep remotes/origin | sed s_remotes/origin/__ | sed s_\ __g`
+    echo "$stepsIndex-b / $stepsNb: Selecting the branch you want to start from (default: develop)"
+    echo "Available upstream branches:"
+    echo $availableBranches
+    echo
 
-        read -p "Which branch do you wish to start from? [develop] " branch
-    fi
+    read -p "Which branch do you wish to start from? [develop] " branch
+    # Empty value is default value which is develop
     if test "$branch" = ""; then
         branch="develop"
     fi
-
-    echo "Selected branch: $branch"
-    if test "$branch" = "develop"; then
-        git branch --set-upstream-to=upstream/$branch
-    else
-        git checkout -b $branch upstream/$branch
-    fi
-    git pull
-    echo
-    stepsIndex=$(($stepsIndex+1))
+else
+    echo "$stepsIndex-b / $stepsNb: Selecting the branch $branch as the working branch"
 fi
+
+# Check if contributor repository is used
+if ! test "$contributor" = ""; then
+    git remote -v | grep "$contributorGithub" > /dev/null
+    if ! test $? = 0; then
+        echo "Add new remote repository $contributorGithub"
+        git remote add $contributor $contributorGithub
+        git fetch $contributor
+    fi
+fi
+
+if ! test "$branch" = "develop"; then
+    # To avoid less pagination
+    export PAGER='less -FRSX'
+    git branch -l | grep "$branch"
+    if ! test $? = 0; then
+        remoteRepository='upstream'
+        if ! test "$contributor" = ""; then
+            remoteRepository=$contributor
+        fi
+
+        echo "Switch to branch branch: $remoteRepository/$branch"
+        echo "git checkout -b $branch $remoteRepository/$branch"
+        git checkout -b $branch $remoteRepository/$branch
+    else
+        echo "Branch $branch already exists locally"
+    fi
+fi
+git pull
+echo
+stepsIndex=$(($stepsIndex+1))
+
 echo
 
 # 2- Run composer install

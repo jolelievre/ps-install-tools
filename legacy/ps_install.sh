@@ -23,7 +23,7 @@ targetDatabase=${baseDatabase}${suffix}
 targetName="Prestashop ${suffix}"
 
 upstreamGithub="git@github.com:PrestaShop/PrestaShop.git"
-forkedGithub="git@github.com:jolelievre/PrestaShop.git"
+originGithub="git@github.com:jolelievre/PrestaShop.git"
 
 echo
 echo "Theses are the new instance informations:"
@@ -55,11 +55,11 @@ if test -d $targetFolder; then
     stepsIndex=$(($stepsIndex+1))
 else
     echo "$stepsIndex-a / $stepsNb: Prepare folder project in $targetFolder"
-    echo "Cloning $forkedGithub into $targetFolder"
+    echo "Cloning $originGithub into $targetFolder"
     parentFolder=$(dirname $targetFolder)
     cloneFolder=$(basename $targetFolder)
     cd $parentFolder
-    git clone $forkedGithub $cloneFolder
+    git clone $originGithub $cloneFolder
     cd $targetFolder
     git remote add upstream $upstreamGithub
     git fetch upstream
