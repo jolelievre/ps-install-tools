@@ -82,29 +82,28 @@ else
     echo "Copying PrestaShop repository into $targetFolder"
     cp -R $tmpPrestaShopFolder $targetFolder
 
-    parentFolder=$(dirname $targetFolder)
-    cloneFolder=$(basename $targetFolder)
+    cd $targetFolder
+    # Select the branch to start from
+    if test "$branch" = ""; then
+        availableBranches=`git branch -a | grep remotes/upstream | sed s_remotes/upstream/__ | sed s_\ __g`
+        forkBranches=`git branch -a | grep remotes/origin | sed s_remotes/origin/__ | sed s_\ __g`
+        echo "$stepsIndex-b / $stepsNb: Selecting the branch you want to start from (default: develop)"
+        echo "Available upstream branches:"
+        echo $availableBranches
+        echo
+
+        read -p "Which branch do you wish to start from? [develop] " branch
+        # Empty value is default value which is develop
+        if test "$branch" = ""; then
+            branch="develop"
+        fi
+    else
+        echo "$stepsIndex-b / $stepsNb: Selecting the branch $branch as the working branch"
+    fi
 fi
+
 
 cd $targetFolder
-# Select the branch to start from
-if test "$branch" = ""; then
-    availableBranches=`git branch -a | grep remotes/upstream | sed s_remotes/upstream/__ | sed s_\ __g`
-    forkBranches=`git branch -a | grep remotes/origin | sed s_remotes/origin/__ | sed s_\ __g`
-    echo "$stepsIndex-b / $stepsNb: Selecting the branch you want to start from (default: develop)"
-    echo "Available upstream branches:"
-    echo $availableBranches
-    echo
-
-    read -p "Which branch do you wish to start from? [develop] " branch
-    # Empty value is default value which is develop
-    if test "$branch" = ""; then
-        branch="develop"
-    fi
-else
-    echo "$stepsIndex-b / $stepsNb: Selecting the branch $branch as the working branch"
-fi
-
 # Check if contributor repository is used
 if ! test "$contributor" = ""; then
     git remote -v | grep "$contributorGithub" > /dev/null
@@ -115,24 +114,34 @@ if ! test "$contributor" = ""; then
     fi
 fi
 
-if ! test "$branch" = "develop"; then
+# Create the appropriate branch if it is not here yet
+if [ "$branch" != "develop" ] && [ "$branch" != "" ]; then
     # To avoid less pagination
     export PAGER='less -FRSX'
-    git branch -l | grep "$branch"
+    git branch -l | grep "$branch" > /dev/null
     if ! test $? = 0; then
         remoteRepository='upstream'
         if ! test "$contributor" = ""; then
             remoteRepository=$contributor
         fi
 
-        echo "Switch to branch branch: $remoteRepository/$branch"
-        echo "git checkout -b $branch $remoteRepository/$branch"
+        echo "Checkout branch: $remoteRepository/$branch"
+        git fetch $remoteRepository
         git checkout -b $branch $remoteRepository/$branch
     else
         echo "Branch $branch already exists locally"
+        currentBranch=`git branch --show-current`
+        if test "$currentBranch" = "$branch"; then
+            echo "Already using branch $branch"
+        else
+            echo "Switching to branch $branch"
+            git checkout $branch
+        fi
     fi
+else
+    currentBranch=`git branch --show-current`
+    echo "Keep using local branch $currentBranch"
 fi
-git pull
 echo
 stepsIndex=$(($stepsIndex+1))
 
