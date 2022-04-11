@@ -59,7 +59,11 @@ else
     echo "$stepsIndex-a / $stepsNb: Prepare folder project in $targetFolder"
     # Get PrestaShop cloned in temporary folder
     tmpPrestaShopFolder="$tmpFolder/PrestaShop"
-    if ! test -d $tmpPrestaShopFolder; then
+
+    # Check that forlder exists AND composer file is there (tmp folder may be incompletely cleared and only keep a hidden .git folder)
+    if ! [ -d $tmpPrestaShopFolder ] || ! [ -f "tmpPrestaShopFolder/composer.json" ]; then
+        echo "Cleaning tmp folder $tmpPrestaShopFolder"
+        rm -fR $tmpPrestaShopFolder
         echo "Cloning repository $originGithub into $tmpPrestaShopFolder"
         cd $tmpFolder
         git clone $originGithub PrestaShop
