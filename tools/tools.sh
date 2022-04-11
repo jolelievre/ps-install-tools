@@ -120,19 +120,33 @@ insert_data() {
 check_build_assets_required() {
     # No Makefile present, so no build possible
     if ! test -f $targetFolder/Makefile; then
+        echo "No Makefile detected probably an old version that does not need assets building"
         return 1
     fi
+
     if ! test -d $targetFolder/admin-dev/themes/default/public; then
+        echo "Admin default theme missing"
         return 0
     fi
     if ! test -d $targetFolder/admin-dev/themes/new-theme/public; then
+        echo "Admin new theme missing"
         return 0
     fi
     if ! test -f $targetFolder/themes/core.js; then
+        echo "Front core assets missing"
+        return 0
+    fi
+    if ! test -f $targetFolder/themes/classic/assets/css/theme.css; then
+        echo "Front classic theme stylesheet missing"
+        return 0
+    fi
+    if ! test -f $targetFolder/themes/classic/assets/js/theme.js; then
+        echo "Front classic theme js missing"
         return 0
     fi
 
     # All required assets have been checked so no build needed
+    echo "All required assets are present"
     return 1
 }
 
