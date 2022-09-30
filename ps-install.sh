@@ -53,15 +53,17 @@ stepsNb=5
 
 ## 1- Clone project if the folder does not exist
 if test -d $targetFolder; then
+    firstInstall=1
     echo "$stepsIndex-a / $stepsNb: Folder $targetFolder already exists, no need to create it"
     stepsIndex=$(($stepsIndex+1))
 else
+    firstInstall=0
     echo "$stepsIndex-a / $stepsNb: Prepare folder project in $targetFolder"
     # Get PrestaShop cloned in temporary folder
     tmpPrestaShopFolder="$tmpFolder/PrestaShop"
 
-    # Check that forlder exists AND composer file is there (tmp folder may be incompletely cleared and only keep a hidden .git folder)
-    if ! [ -d $tmpPrestaShopFolder ] || ! [ -f "tmpPrestaShopFolder/composer.json" ]; then
+    # Check that folder exists AND composer file is there (tmp folder may be incompletely cleared and only keep a hidden .git folder)
+    if ! [ -d $tmpPrestaShopFolder ] || ! [ -f "$tmpPrestaShopFolder/composer.json" ]; then
         echo "Cleaning tmp folder $tmpPrestaShopFolder"
         rm -fR $tmpPrestaShopFolder
         echo "Cloning repository $originGithub into $tmpPrestaShopFolder"
@@ -79,9 +81,10 @@ else
     git fetch upstream
     git fetch origin
 
-    echo "Link default branch to upstream"
+    echo "Link default branch to upstream and update branch"
     git checkout develop
     git branch --set-upstream-to=upstream/develop
+    git pull
 
     echo "Copying PrestaShop repository into $targetFolder"
     cp -R $tmpPrestaShopFolder $targetFolder
@@ -238,3 +241,9 @@ echo "Your Prestashop instance is available at the following address:"
 echo $targetUrl
 echo $targetUrl/admin-dev
 echo
+
+if test $firstInstall = 1; then
+    echo "Switch to new freshly installed project $targetFolder"
+    cd $targetFolder
+    echo
+fi

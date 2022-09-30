@@ -105,6 +105,7 @@ insert_data() {
     fi
 
     # Enable all experimental features by default
+    echo Enable all feature flags
     mysql -u root -D $targetDatabase -e "UPDATE \`ps_feature_flag\` SET \`state\` = \"1\""
     
     echo Warmup frontend cache

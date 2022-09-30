@@ -22,7 +22,7 @@ echo
 stepsIndex=1
 stepsNb=4
 
-echo "Stoping apache"
+echo "Stopping apache"
 sudo apachectl -k stop
 
 ## 1- Remove project folder
