@@ -104,10 +104,6 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
 
-    # Enable all experimental features by default
-    echo Enable all feature flags
-    mysql -u root -D $targetDatabase -e "UPDATE \`ps_feature_flag\` SET \`state\` = \"1\""
-    
     echo Warmup frontend cache
     curl $targetUrl 2> /dev/null > /dev/null
 
