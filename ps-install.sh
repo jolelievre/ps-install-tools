@@ -49,7 +49,7 @@ echo
 
 ## Start installation
 stepsIndex=1
-stepsNb=5
+stepsNb=6
 
 ## 1- Clone project if the folder does not exist
 if test -d $targetFolder; then
@@ -174,7 +174,13 @@ fi
 stepsIndex=$(($stepsIndex+1))
 echo
 
-# 3- Prepare apache config
+# 3- Prepare UI test env
+echo "$stepsIndex / $stepsNb: Prepare UI tests config"
+cat $BASEDIR/resources/test-ui.env | sed "s#{URL_FO}#$targetUrl#g" | sed "s#{URL_BO}#$targetUrl/admin-dev#g" | sed "s#{EMAIL}#$email#g" | sed "s#{PASSWORD}#$password#g" | sed "s#{FIRSTNAME}#$firstName#g" | sed "s#{LASTNAME}#$lastName#g" | sed "s#{DB_NAME}#$targetDatabase#g" | sed "s#{SHOP_NAME}#$targetName#g" > $targetFolder/tests/UI/.env
+stepsIndex=$(($stepsIndex+1))
+echo
+
+# 4- Prepare apache config
 echo "$stepsIndex / $stepsNb: Prepare apache vhost"
 vhostFilePath="/usr/local/etc/httpd/extra/sites-available/$targetDomain.conf"
 if test -f $vhostFilePath; then

@@ -70,8 +70,8 @@ insert_data() {
         --db_user=root \
         --db_name=$targetDatabase \
         --db_create=1 \
-        --firstname=Jo \
-        --lastname=LELIEVRE \
+        --firstname=$firstName \
+        --lastname=$lastName \
         --name="$targetName" \
         --email=$email \
         --password=$password"

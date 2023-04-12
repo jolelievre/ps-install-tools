@@ -10,3 +10,5 @@ smtpPass: ""
 smtpPort: 25
 email: "jonathan.lelievre@prestashop.com"
 password: "prestashop"
+firstName: "Jo"
+lastName: "LELIEVRE"
