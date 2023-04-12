@@ -31,8 +31,10 @@ rm -fR $targetFolder
 stepsIndex=$(($stepsIndex+1))
 
 ## 2- Drop database
-echo "$stepsIndex / $stepsNb: Drop database $targetDatabase"
+echo "$stepsIndex-a / $stepsNb: Drop database $targetDatabase"
 mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
+echo "$stepsIndex-b / $stepsNb: Drop database test_$targetDatabase"
+mysql -u root -e "DROP DATABASE IF EXISTS \`test_$targetDatabase\`;"
 stepsIndex=$(($stepsIndex+1))
 
 ## 3- Removing Apache config
