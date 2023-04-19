@@ -8,7 +8,7 @@ const tools = require('./tools');
 const config = require('./config');
 const puppeteer = require('puppeteer');
 
-const backOfficeUrl = 'http://' + config.baseDomain + process.argv[2] + '/admin-dev';
+const backOfficeUrl = 'http://' + config.domainPlaceholder.replace('{SUFFIX}', process.argv[2]) + '/admin-dev';
 
 const run = async () => {
     const browser = await puppeteer.launch({
@@ -18,7 +18,7 @@ const run = async () => {
     const page = await browser.newPage();
   
     // Login in BO
-    console.log('Login in BO');
+    console.log('Login in BO: ' + backOfficeUrl);
     await page.goto(backOfficeUrl, {waitUntil: 'networkidle0'});
     await tools.loginBO(page, config);
     await browser.close();

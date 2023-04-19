@@ -1,6 +1,6 @@
 baseFolder: "$HOME/www/prestashop-"
 tmpFolder: "/tmp"
-baseDomain: "local.prestashop-"
+domainPlaceholder: "prestashop.{SUFFIX}.local"
 baseDatabase: "prestashop-"
 upstreamGithub: "git@github.com:PrestaShop/PrestaShop.git"
 originGithub: "git@github.com:johndoe/PrestaShop.git"

@@ -25,7 +25,7 @@ else
 fi
 
 targetFolder=${baseFolder}${suffix}
-targetDomain=${baseDomain}${suffix}
+targetDomain=`echo $domainPlaceholder | sed s/{SUFFIX}/$suffix/`
 targetUrl="http://${targetDomain}"
 targetDatabase=${baseDatabase}${suffix}
 targetName="Prestashop ${suffix}"
