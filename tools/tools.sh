@@ -104,6 +104,8 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
 
+    backup_data
+
     echo Warmup frontend cache
     curl $targetUrl 2> /dev/null > /dev/null
 
@@ -111,6 +113,18 @@ insert_data() {
     pushd $BASEDIR
     npm run warmup-backoffice ${suffix}
     popd
+}
+
+backup_data() {
+    echo Dump database $targetDatabase in $targetFolder/var/cache/dump.sql
+    mysqldump -u root $targetDatabase > $targetFolder/var/cache/dump.sql
+}
+
+reset_data() {
+    echo Drop database $targetDatabase
+    mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
+    echo Load dump from $targetFolder/var/cache/dump.sql
+    mysql -u root $targetDatabase < $targetFolder/var/cache/dump.sql
 }
 
 # Returns 0 if assets building is required
