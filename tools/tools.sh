@@ -123,6 +123,8 @@ backup_data() {
 reset_data() {
     echo Drop database $targetDatabase
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
+    echo Create database $targetDatabase
+    mysql -u root -e "CREATE DATABASE \`$targetDatabase\`;"
     echo Load dump from $targetFolder/var/cache/dump.sql
     mysql -u root $targetDatabase < $targetFolder/var/cache/dump.sql
 }

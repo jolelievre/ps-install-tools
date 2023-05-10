@@ -31,6 +31,7 @@ targetDatabase=${baseDatabase}${suffix}
 targetName="Prestashop ${suffix}"
 
 echo "These are the $suffix instance informations:"
-echo "Project folder: $targetFolder"
-echo "Project url: $targetUrl"
-echo "Database name: $targetDatabase"
+echo "Project folder:     $targetFolder"
+echo "Project url:        $targetUrl"
+echo "Project admin url:  $targetUrl/admin-dev"
+echo "Database name:      $targetDatabase"
