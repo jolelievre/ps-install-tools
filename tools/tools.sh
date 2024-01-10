@@ -55,8 +55,9 @@ insert_data() {
     echo Removing cache files..
     rm -fR var/cache/*
     if test -f $targetFolder/app/config/parameters.php; then
-        echo Warmup cache...
-        php -d memory_limit=-1 ./bin/console cache:clear
+        echo Clear cache without warmup...
+        php -d memory_limit=-1 ./bin/console cache:clear --env=dev --no-warmup
+        php -d memory_limit=-1 ./bin/console cache:clear --env=prod --no-warmup
     fi
     echo Dropping database $targetDatabase...
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
