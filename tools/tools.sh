@@ -117,8 +117,8 @@ insert_data() {
 }
 
 backup_data() {
-    echo Dump database $targetDatabase in $targetFolder/var/cache/dump.sql
-    mysqldump -u root $targetDatabase > $targetFolder/var/cache/dump.sql
+    echo Dump database $targetDatabase in $targetFolder/var/dump.sql
+    mysqldump -u root $targetDatabase > $targetFolder/var/dump.sql
 }
 
 reset_data() {
@@ -126,8 +126,8 @@ reset_data() {
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     echo Create database $targetDatabase
     mysql -u root -e "CREATE DATABASE \`$targetDatabase\`;"
-    echo Load dump from $targetFolder/var/cache/dump.sql
-    mysql -u root $targetDatabase < $targetFolder/var/cache/dump.sql
+    echo Load dump from $targetFolder/var/dump.sql
+    mysql -u root $targetDatabase < $targetFolder/var/dump.sql
 }
 
 # Returns 0 if assets building is required
