@@ -54,8 +54,8 @@ stepsIndex=$(($stepsIndex+1))
 
 ## 3- Removing Apache config
 echo "$stepsIndex / $stepsNb: Removing apache config for $targetDomain"
-vhostFilePath="/usr/local/etc/httpd/extra/sites-available/$targetDomain.conf"
-enabledVhostFilePath="/usr/local/etc/httpd/extra/sites-enabled/$targetDomain.conf"
+vhostFilePath="/opt/homebrew/etc/httpd/extra/sites-available/$targetDomain.conf"
+enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.conf"
 rm -f $vhostFilePath $enabledVhostFilePath
 echo "Restarting apache"
 sudo apachectl -k stop

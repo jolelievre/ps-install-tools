@@ -182,7 +182,7 @@ echo
 
 # 4- Prepare apache config
 echo "$stepsIndex / $stepsNb: Prepare apache vhost"
-vhostFilePath="/usr/local/etc/httpd/extra/sites-available/$targetDomain.conf"
+vhostFilePath="/opt/homebrew/etc/httpd/extra/sites-available/$targetDomain.conf"
 if test -f $vhostFilePath; then
     echo "Vhost config is already available"
 else
@@ -203,12 +203,12 @@ EOM
     echo
 fi
 
-enabledVhostFilePath="/usr/local/etc/httpd/extra/sites-enabled/$targetDomain.conf"
+enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.conf"
 if test -f $enabledVhostFilePath; then
     echo "Vhost config is already enabled"
 else
     echo "Enabling vhost config"
-    cd /usr/local/etc/httpd/extra/sites-enabled
+    cd /opt/homebrew/etc/httpd/extra/sites-enabled
     ln -s ../sites-available/$targetDomain.conf $targetDomain.conf
 
     echo "Restarting apache"
