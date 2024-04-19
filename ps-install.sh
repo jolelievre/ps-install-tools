@@ -212,9 +212,7 @@ else
     ln -s ../sites-available/$targetDomain.conf $targetDomain.conf
 
     echo "Restarting apache"
-    sudo apachectl -k stop
-    sleep 2
-    sudo apachectl start
+    sudo brew services restart httpd
 fi
 stepsIndex=$(($stepsIndex+1))
 echo

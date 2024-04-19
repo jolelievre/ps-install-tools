@@ -23,7 +23,7 @@ stepsIndex=1
 stepsNb=4
 
 echo "Stopping apache"
-sudo apachectl -k stop
+sudo brew services stop httpd
 
 ## 1- Remove project folder
 echo "$stepsIndex / $stepsNb: Removing folder $targetFolder"
@@ -44,8 +44,7 @@ enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.
 rm -f $vhostFilePath $enabledVhostFilePath
 
 echo "Restarting apache"
-sleep 2
-sudo apachectl start
+sudo brew services restart httpd
 stepsIndex=$(($stepsIndex+1))
 
 ## 4- Clean /etc/hosts
