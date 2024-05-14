@@ -162,7 +162,7 @@ const searchForShopEditionUrl = async (page, shopName) => {
 
 const run = async () => {
     const browser = await playwright.chromium.launch({
-        headless: false,
+        headless: true,
         args: [
             '--no-sandbox',
             '--window-size=1680, 900',
