@@ -6,7 +6,7 @@ if (process.argv.length < 3) {
 
 const yaml = require('js-yaml');
 const fs   = require('fs');
-const puppeteer = require('puppeteer');
+const playwright = require('playwright');
 const tools = require('./tools');
 
 // Get document, or throw exception on error
@@ -41,7 +41,7 @@ const enabledMultiShop = async (page) => {
     if (!isChecked) {
         await page.click('#form_multishop_feature_active_1');
         await page.click('#form-preferences-save-button');
-        await page.waitForSelector('div.alert.alert-success');
+        await page.waitForSelector('div.alert.alert-success[role="alert"]');
     } else {
         console.log('Multistore mode already enabled');
     }
@@ -96,7 +96,7 @@ const createShop = async (page, shopName, shopGroupId, shopColor) => {
         await page.click('#page-header-desc-shop_group-new_2');
         await page.waitForSelector('#shop_form');
         await page.type('#name', shopName);
-        await page.select('#id_shop_group', shopGroupId);
+        await page.selectOption('#id_shop_group', shopGroupId);
         await page.type('#color_0', shopColor);
 
         await page.click('#shop_form_submit_btn');
@@ -161,9 +161,12 @@ const searchForShopEditionUrl = async (page, shopName) => {
 }
 
 const run = async () => {
-    const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox'],
+    const browser = await playwright.chromium.launch({
+        headless: false,
+        args: [
+            '--no-sandbox',
+            '--window-size=1680, 900',
+        ],
     });
     const page = await browser.newPage();
 
@@ -173,6 +176,12 @@ const run = async () => {
     // Login in BO
     console.log('Login in BO');
     await page.goto(backOfficeUrl, {waitUntil: 'networkidle0'});
+
+    // Close debug bar
+    console.log('Close debug toolbar');
+    await page.waitForSelector('button[id^="sfToolbarHideButton"]');
+    await page.click('button[id^="sfToolbarHideButton"]');
+
     await tools.loginBO(page, config);
 
     await enabledMultiShop(page);
