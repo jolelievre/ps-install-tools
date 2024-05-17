@@ -105,6 +105,9 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
 
+    echo Authorize Admin API in dev mode
+    mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"0\" WHERE \`name\` = \"PS_ADMIN_API_FORCE_DEBUG_SECURED\""
+
     backup_data
 
     echo Warmup frontend cache
