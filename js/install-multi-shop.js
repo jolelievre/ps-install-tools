@@ -24,9 +24,14 @@ console.log('Install multi shop data in PrestaShop ' + backOfficeUrl);
 
 const enabledMultiShop = async (page) => {
     console.log('Enable multi shop mode');
+
     const preferencesUrl = await page.evaluate(() => {
-        return document.querySelector('#subtab-AdminParentPreferences a').href;
+        return document.querySelector('#subtab-AdminParentPreferences a')?.href;
     });
+    if (!preferencesUrl) {
+        console.log('Could not find preferences link');
+        process.exit(1);
+    }
 
     //This call may be long if the shop has just been installed
     await page.goto(preferencesUrl, {waitUntil: 'load', timeout: 60000});
@@ -50,8 +55,13 @@ const enabledMultiShop = async (page) => {
 const createShopGroup = async (page, shopGroupName) => {
     console.log(`Add new shop group "${shopGroupName}"`);
     const shopGroupUrl = await page.evaluate(() => {
-        return document.querySelector('#subtab-AdminShopGroup a').href;
+        return document.querySelector('#subtab-AdminShopGroup a')?.href;
     });
+    if (!shopGroupUrl) {
+        console.log('Could not find shop group link');
+        process.exit(1);
+    }
+
     await page.goto(shopGroupUrl);
     const groupExists = await searchForGroupShop(page, shopGroupName);
 
@@ -87,8 +97,13 @@ const searchForGroupShop = async (page, shopGroupName) => {
 const createShop = async (page, shopName, shopGroupId, shopColor) => {
     console.log(`Add new shop "${shopName}"`);
     const shopGroupUrl = await page.evaluate(() => {
-        return document.querySelector('#subtab-AdminShopGroup a').href;
+        return document.querySelector('#subtab-AdminShopGroup a')?.href;
     });
+    if (!shopGroupUrl) {
+        console.log('Could not find shop group link');
+        process.exit(1);
+    }
+
     await page.goto(shopGroupUrl);
     const shopUrlExists = await searchForShopUrl(page, shopName);
 
@@ -135,7 +150,7 @@ const searchForShopUrl = async (page, shopName) => {
         let shopUrl = null;
         nameItems.forEach((treeItem) => {
             if (treeItem.textContent.trim() === shopName) {
-                shopUrl = treeItem.querySelector('a').href;
+                shopUrl = treeItem.querySelector('a')?.href;
             }
         })
 
@@ -178,9 +193,10 @@ const run = async () => {
     await page.goto(backOfficeUrl, {waitUntil: 'networkidle0'});
 
     // Close debug bar
-    console.log('Close debug toolbar');
-    await page.waitForSelector('button[id^="sfToolbarHideButton"]');
-    await page.click('button[id^="sfToolbarHideButton"]');
+    if (await page.$('button[id^="sfToolbarHideButton"]') !== null) {
+        console.log('Close debug toolbar');
+        await page.click('button[id^="sfToolbarHideButton"]');
+    }
 
     await tools.loginBO(page, config);
 
