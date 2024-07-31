@@ -122,50 +122,56 @@ if ! test "$contributor" = ""; then
 fi
 
 # Create the appropriate branch if it is not here yet
-if [ "$branch" != "develop" ] && [ "$branch" != "" ]; then
-    # To avoid less pagination
-    export PAGER='less -FRSX'
-    git branch -l | grep "$branch" > /dev/null
-    if ! test $? = 0; then
-        remoteRepository='upstream'
-        if ! test "$contributor" = ""; then
-            remoteRepository=$contributor
-        fi
+if test -d .git; then
+    if [ "$branch" != "develop" ] && [ "$branch" != "" ]; then
+        # To avoid less pagination
+        export PAGER='less -FRSX'
+        git branch -l | grep "$branch" > /dev/null
+        if ! test $? = 0; then
+            remoteRepository='upstream'
+            if ! test "$contributor" = ""; then
+                remoteRepository=$contributor
+            fi
 
-        echo "Checkout branch: $remoteRepository/$branch"
-        git fetch $remoteRepository
-        git checkout -b $branch $remoteRepository/$branch
-    else
-        echo "Branch $branch already exists locally"
-        currentBranch=`git branch --show-current`
-        if test "$currentBranch" = "$branch"; then
-            echo "Already using branch $branch"
+            echo "Checkout branch: $remoteRepository/$branch"
+            git fetch $remoteRepository
+            git checkout -b $branch $remoteRepository/$branch
         else
-            echo "Switching to branch $branch"
-            git checkout $branch
+            echo "Branch $branch already exists locally"
+            currentBranch=`git branch --show-current`
+            if test "$currentBranch" = "$branch"; then
+                echo "Already using branch $branch"
+            else
+                echo "Switching to branch $branch"
+                git checkout $branch
+            fi
         fi
+    else
+        currentBranch=`git branch --show-current`
+        echo "Keep using local branch $currentBranch"
     fi
 else
-    currentBranch=`git branch --show-current`
-    echo "Keep using local branch $currentBranch"
+    echo No git folder found to switch branch, probably a built archive
 fi
 echo
 stepsIndex=$(($stepsIndex+1))
-
-echo
 
 # 2- Run composer install
 echo "$stepsIndex / $stepsNb: Install vendors"
 cd $targetFolder
 
-# No composer is for 1.6 version where modules are installed thanks to git submodules
-if ! test -f composer.json; then
+if test -f composer.json; then
+    echo "Run composer install"
+    php -d memory_limit=-1 `which composer` install
+elif test -d .git; then
+    # No composer is for 1.6 version where modules are installed thanks to git submodules
     echo "Install git submodules"
     git submodule init
     git submodule update
 else
-    php -d memory_limit=-1 `which composer` install
+    echo No composer nor git folder, probably a built archive
 fi
+
 check_build_assets_required
 if test $? = 0; then
     echo "Build assets"
@@ -176,7 +182,11 @@ echo
 
 # 3- Prepare UI test env
 echo "$stepsIndex / $stepsNb: Prepare UI tests config"
-cat $BASEDIR/resources/test-ui.env | sed "s#{URL_FO}#$targetUrl#g" | sed "s#{URL_BO}#$targetUrl/admin-dev#g" | sed "s#{EMAIL}#$email#g" | sed "s#{PASSWORD}#$password#g" | sed "s#{FIRSTNAME}#$firstName#g" | sed "s#{LASTNAME}#$lastName#g" | sed "s#{DB_NAME}#$targetDatabase#g" | sed "s#{SHOP_NAME}#$targetName#g" > $targetFolder/tests/UI/.env
+if test -d /tests/UI; then
+    cat $BASEDIR/resources/test-ui.env | sed "s#{URL_FO}#$targetUrl#g" | sed "s#{URL_BO}#$targetUrl/admin-dev#g" | sed "s#{EMAIL}#$email#g" | sed "s#{PASSWORD}#$password#g" | sed "s#{FIRSTNAME}#$firstName#g" | sed "s#{LASTNAME}#$lastName#g" | sed "s#{DB_NAME}#$targetDatabase#g" | sed "s#{SHOP_NAME}#$targetName#g" > $targetFolder/tests/UI/.env
+else
+    echo No UI tests folder found
+fi
 stepsIndex=$(($stepsIndex+1))
 echo
 

@@ -59,10 +59,20 @@ insert_data() {
         php -d memory_limit=-1 ./bin/console cache:clear --env=dev --no-warmup
         php -d memory_limit=-1 ./bin/console cache:clear --env=prod --no-warmup
     fi
+
+    if test -f $targetFolder/install-dev/index_cli.php; then
+        installCli=install-dev/index_cli.php
+    elif test -f $targetFolder/install/index_cli.php; then
+        installCli=install/index_cli.php
+    else
+        echo Could not find CLI endpoint
+        exot 1
+    fi
+
     echo Dropping database $targetDatabase...
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     echo "Inserting fixtures data for domain $targetDomain database $targetDatabase..."
-    echo "Command used: php install-dev/index_cli.php \
+    echo "Command used: php $installCli \
         --language=en \
         --country=fr \
         --domain=$targetDomain \
@@ -76,7 +86,7 @@ insert_data() {
         --name="$targetName" \
         --email=$email \
         --password=$password"
-    php install-dev/index_cli.php \
+    php $installCli \
         --language=en \
         --country=fr \
         --domain=$targetDomain \
@@ -138,6 +148,11 @@ check_build_assets_required() {
     # No Makefile present, so no build possible
     if ! test -f $targetFolder/Makefile; then
         echo "No Makefile detected probably an old version that does not need assets building"
+        return 1
+    fi
+
+    if ! test -f $targetFolder/tools/assets/build.sh; then
+        echo "No build script found probably a built archive"
         return 1
     fi
 
