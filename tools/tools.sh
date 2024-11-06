@@ -51,15 +51,8 @@ load_config() {
 }
 
 insert_data() {
+    clear_cache
     cd $targetFolder
-    echo Removing cache files..
-    rm -fR var/cache/*
-    if test -f $targetFolder/app/config/parameters.php; then
-        echo Clear cache without warmup...
-        php -d memory_limit=-1 ./bin/console cache:clear --env=dev --no-warmup
-        php -d memory_limit=-1 ./bin/console cache:clear --env=prod --no-warmup
-    fi
-
     if test -f $targetFolder/install-dev/index_cli.php; then
         installCli=install-dev/index_cli.php
     elif test -f $targetFolder/install/index_cli.php; then
@@ -129,6 +122,17 @@ insert_data() {
     popd
 }
 
+clear_cache() {
+    cd $targetFolder
+    echo Removing cache files..
+    rm -fR var/cache/*
+    if test -f $targetFolder/app/config/parameters.php; then
+        echo Clear cache without warmup...
+        php -d memory_limit=-1 ./bin/console cache:clear --env=dev --no-warmup
+        php -d memory_limit=-1 ./bin/console cache:clear --env=prod --no-warmup
+    fi
+}
+
 backup_data() {
     echo Dump database $targetDatabase in $targetFolder/var/dump.sql
     mysqldump -u root $targetDatabase > $targetFolder/var/dump.sql
@@ -141,6 +145,7 @@ reset_data() {
     mysql -u root -e "CREATE DATABASE \`$targetDatabase\`;"
     echo Load dump from $targetFolder/var/dump.sql
     mysql -u root $targetDatabase < $targetFolder/var/dump.sql
+    clear_cache
 }
 
 # Returns 0 if assets building is required
