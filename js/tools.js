@@ -7,6 +7,7 @@ module.exports.loginBO = async (page, config) => {
     } catch {
         // Do nothing we only wait for the load for old versions that are slower
     }
-    await page.waitForSelector('body.ps_back-office');
+    // Wait for the BO menu to be visible
+    await page.waitForSelector('.nav-bar:not(.mobile-nav)');
     console.log('Login to BO successful');
 };
