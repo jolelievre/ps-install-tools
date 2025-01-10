@@ -59,7 +59,7 @@ insert_data() {
         installCli=install/index_cli.php
     else
         echo Could not find CLI endpoint
-        exot 1
+        exit 1
     fi
 
     echo Dropping database $targetDatabase...
@@ -110,6 +110,14 @@ insert_data() {
 
     echo Authorize Admin API in dev mode
     mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"0\" WHERE \`name\` = \"PS_ADMIN_API_FORCE_DEBUG_SECURED\""
+
+    if [ -f $targetFolder/bin/console ]; then
+        echo Create default API client
+        hasClientCommand=`./bin/console | grep prestashop:api-client > /dev/null; echo $?`
+        if [ "$hasClientCommand" = "0" ]; then
+            $targetFolder/bin/console prestashop:api-client create test --all-scopes --name='Test client' --description='Test client with all scopes' --timeout=3600 --secret=18c7b983c2eaa22a111609ce2b1c435e
+        fi
+    fi
 
     backup_data
 
