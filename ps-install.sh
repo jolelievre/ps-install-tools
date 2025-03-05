@@ -193,9 +193,19 @@ echo
 # 4- Prepare apache config
 echo "$stepsIndex / $stepsNb: Prepare apache vhost"
 vhostFilePath="/opt/homebrew/etc/httpd/extra/sites-available/$targetDomain.conf"
+vhostUpdateNeeded=0
 if test -f $vhostFilePath; then
     echo "Vhost config is already available"
+    matchedDomain=`cat $vhostFilePath | grep $targetDomain`
+    if [ "$matchedDomain" = "" ]; then
+        echo Could not find domain in vhost file it needs to be updated
+        vhostUpdateNeeded=1
+    fi
 else
+    vhostUpdateNeeded=1
+fi
+
+if [ "$vhostUpdateNeeded" = "1" ]; then
     baseLog="$HOME/www/var/logs/prestashop-"
     echo "Setting vhost config in $vhostFilePath:"
     cat > $vhostFilePath <<- EOM
@@ -217,13 +227,21 @@ enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.
 if test -f $enabledVhostFilePath; then
     echo "Vhost config is already enabled"
 else
+    vhostUpdateNeeded=1
     echo "Enabling vhost config"
     cd /opt/homebrew/etc/httpd/extra/sites-enabled
     ln -s ../sites-available/$targetDomain.conf $targetDomain.conf
+fi
 
+echo Remove trusted proxies
+newEnv=`cat $targetFolder/.env | sed -r "s@PS_TRUSTED_PROXIES=.*@PS_TRUSTED_PROXIES=@g"`
+echo "$newEnv" > $targetFolder/.env
+
+if [ "$vhostUpdateNeeded" = "1" ]; then
     echo "Restarting apache"
     sudo brew services restart httpd
 fi
+
 stepsIndex=$(($stepsIndex+1))
 echo
 
