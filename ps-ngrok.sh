@@ -31,7 +31,14 @@ ngrok http $targetUrl --log=$ngrokLog 2> $ngrokErrorLog > /dev/null &
 echo Waiting for ngrok log file
 until [ -e $ngrokLog ]; do sleep 1; done
 
+echo Wait for initialization
+sleep 5
 ngrokUrl=`cat $ngrokLog | grep "started tunnel" | sed -n 's/\(.*\)url=\(.*\)/\2/p'`
+if [ "$ngrokUrl" = "" ]; then
+    echo Wait for initialization
+    sleep 5
+    ngrokUrl=`cat $ngrokLog | grep "started tunnel" | sed -n 's/\(.*\)url=\(.*\)/\2/p'`
+fi
 
 if [ "$ngrokUrl" = "" ]; then
     echo Could not find ngrok url check the logs to see what happened

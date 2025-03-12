@@ -233,9 +233,11 @@ else
     ln -s ../sites-available/$targetDomain.conf $targetDomain.conf
 fi
 
-echo Remove trusted proxies
-newEnv=`cat $targetFolder/.env | sed -r "s@PS_TRUSTED_PROXIES=.*@PS_TRUSTED_PROXIES=@g"`
-echo "$newEnv" > $targetFolder/.env
+if test -f $targetFolder/.env; then
+    echo Remove trusted proxies
+    newEnv=`cat $targetFolder/.env | sed -r "s@PS_TRUSTED_PROXIES=.*@PS_TRUSTED_PROXIES=@g"`
+    echo "$newEnv" > $targetFolder/.env
+fi
 
 if [ "$vhostUpdateNeeded" = "1" ]; then
     echo "Restarting apache"
