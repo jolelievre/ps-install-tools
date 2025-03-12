@@ -108,13 +108,13 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
 
-    echo Authorize Admin API in dev mode
-    mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"0\" WHERE \`name\` = \"PS_ADMIN_API_FORCE_DEBUG_SECURED\""
-
     if [ -f $targetFolder/bin/console ]; then
-        echo Create default API client
         hasClientCommand=`./bin/console | grep prestashop:api-client > /dev/null; echo $?`
         if [ "$hasClientCommand" = "0" ]; then
+            echo Authorize Admin API in dev mode
+            mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"0\" WHERE \`name\` = \"PS_ADMIN_API_FORCE_DEBUG_SECURED\""
+
+            echo Create default API client
             $targetFolder/bin/console prestashop:api-client create test --all-scopes --name='Test client' --description='Test client with all scopes' --timeout=3600 --secret=18c7b983c2eaa22a111609ce2b1c435e
         fi
     fi
