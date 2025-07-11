@@ -61,13 +61,22 @@ insert_data() {
         echo Could not find CLI endpoint
         exit 1
     fi
+    language=$PS_LANGUAGE
+    country=$PS_COUNTRY
+
+    if [ "$language" = "" ]; then
+        language=en
+    fi
+    if [ "$country" = "" ]; then
+        country=fr
+    fi
 
     echo Dropping database $targetDatabase...
     mysql -u root -e "DROP DATABASE IF EXISTS \`$targetDatabase\`;"
     echo "Inserting fixtures data for domain $targetDomain database $targetDatabase..."
     echo "Command used: php $installCli \
-        --language=en \
-        --country=fr \
+        --language=$language \
+        --country=$country \
         --domain=$targetDomain \
         --base_uri=/ \
         --db_server=127.0.0.1 \
@@ -80,8 +89,8 @@ insert_data() {
         --email=$email \
         --password=\"$password\""
     php $installCli \
-        --language=en \
-        --country=fr \
+        --language=$language \
+        --country=$country \
         --domain=$targetDomain \
         --base_uri=/ \
         --db_server=127.0.0.1 \
