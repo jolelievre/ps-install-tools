@@ -76,13 +76,16 @@ else
     fi
 
     # Update the backup repository and copy it to target folder
-    echo "Updating PrestaShop folder"
+    echo "Updating PrestaShop temporary repository in $tmpPrestaShopFolder"
     cd $tmpPrestaShopFolder
     git fetch upstream
     git fetch origin
 
     echo "Link default branch to upstream and update branch"
-    git checkout develop
+    # Use checkout -B to create (or reset) the local develop branch based on upstream, a simple
+    # checkout is ambiguous when develop exists on both remotes but not locally (which happens
+    # when the origin fork was cloned with a default branch other than develop)
+    git checkout -B develop upstream/develop
     git branch --set-upstream-to=upstream/develop
     git pull
 
