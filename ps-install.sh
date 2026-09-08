@@ -186,7 +186,7 @@ echo
 # 3- Prepare UI test env
 echo "$stepsIndex / $stepsNb: Prepare UI tests config"
 if test -d $targetFolder/tests/UI; then
-    cat $BASEDIR/resources/test-ui.env | sed "s#{URL_FO}#$targetUrl#g" | sed "s#{URL_BO}#$targetUrl/admin-dev#g" | sed "s#{EMAIL}#$email#g" | sed "s#{PASSWORD}#$password#g" | sed "s#{FIRSTNAME}#$firstName#g" | sed "s#{LASTNAME}#$lastName#g" | sed "s#{DB_NAME}#$targetDatabase#g" | sed "s#{SHOP_NAME}#$targetName#g" > $targetFolder/tests/UI/.env
+    cat $BASEDIR/resources/test-ui.env | sed "s#{URL_FO}#$targetUrl#g" | sed "s#{URL_BO}#$targetUrl/admin-dev#g" | sed "s#{EMAIL}#$email#g" | sed "s#{PASSWORD}#$password#g" | sed "s#{FIRSTNAME}#$firstName#g" | sed "s#{LASTNAME}#$lastName#g" | sed "s#{DB_NAME}#$targetDatabase#g" | sed "s#{SHOP_NAME}#$targetName#g" | sed "s#{API_CLIENT_ID}#$apiClientId#g" | sed "s#{API_CLIENT_SECRET}#$apiClientSecret#g" > $targetFolder/tests/UI/.env
 else
     echo No UI tests folder found
 fi

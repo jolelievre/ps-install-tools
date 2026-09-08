@@ -9,7 +9,7 @@ Scripts to create, reinstall, reset and remove local PrestaShop instances on mac
 | Database | `prestashop-<s>` (test DB `test_prestashop-<s>`) |
 | Apache vhost | `/opt/homebrew/etc/httpd/extra/sites-{available,enabled}/prestashop.<s>.localhost.conf` |
 
-Folder, domain and database prefixes come from `config.yml` (created from `config.yml.dist` on first run, gitignored).
+Folder, domain and database prefixes, BO account, SMTP settings and the default Admin API client (`apiClientId` / `apiClientSecret`) come from `config.yml`, created from `config.yml.dist` on first run and gitignored. New keys added to `config.yml.dist` are asked once on the next run (default kept without a terminal).
 
 ## Setup
 
@@ -24,7 +24,7 @@ Source `aliases.sh` from your shell profile to get the `ps-*` aliases, or call t
 
 | Command | What it does |
 | --- | --- |
-| `ps-infos <s>` | Read-only report: URLs, DBs (existence), folder, git branch, PrestaShop version, dump, vhost, hosts entry, HTTP status, PHP versions, BO login |
+| `ps-infos [--json] <s>` | Read-only report: URLs, DBs (existence), folder, git branch, PrestaShop version, dump, vhost, hosts entry, HTTP status, PHP versions, BO login. `--json` prints the same data as JSON for scripts and agents |
 | `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, composer install, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup |
 | `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it |

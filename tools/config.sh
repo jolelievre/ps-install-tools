@@ -13,8 +13,10 @@ else
     # Detect the instance from the current folder when it is inside an instance folder
     suffix=$(detect_suffix_from_path "$PWD")
     if test "$suffix" != ""; then
-        echo "Detected instance from current folder: $suffix"
-        echo
+        if test "$quietInfos" != "1"; then
+            echo "Detected instance from current folder: $suffix"
+            echo
+        fi
     else
         echo "Command usage:"
         echo
@@ -33,7 +35,7 @@ fi
 
 # Without a terminal (AI agent, hook, cron) read returns an empty value: never go on with an empty suffix
 if test "$suffix" = ""; then
-    echo "No suffix given and none detected from the current folder, aborting"
+    echo "No suffix given and none detected from the current folder, aborting" >&2
     exit 1
 fi
 
@@ -43,8 +45,11 @@ targetUrl="http://${targetDomain}"
 targetDatabase=${baseDatabase}${suffix}
 targetName="Prestashop ${suffix}"
 
-echo "These are the $suffix instance informations:"
-echo "Project folder:     $targetFolder"
-echo "Project url:        $targetUrl"
-echo "Project admin url:  $targetUrl/admin-dev"
-echo "Database name:      $targetDatabase"
+# Set quietInfos=1 before sourcing this file to skip the summary (ps-infos --json)
+if test "$quietInfos" != "1"; then
+    echo "These are the $suffix instance informations:"
+    echo "Project folder:     $targetFolder"
+    echo "Project url:        $targetUrl"
+    echo "Project admin url:  $targetUrl/admin-dev"
+    echo "Database name:      $targetDatabase"
+fi

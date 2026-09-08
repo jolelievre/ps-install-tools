@@ -15,14 +15,14 @@ Imported from `~/.claude/CLAUDE.md` on machines used for PrestaShop development.
 | Apache vhost | `/opt/homebrew/etc/httpd/extra/sites-{available,enabled}/prestashop.<s>.localhost.conf` |
 | Apache logs | `~/www/var/logs/prestashop-<s>.error.log` and `.access.log` |
 | BO login | `email` / `password` of `ps-install-tools/config.yml`, printed by `ps-infos` |
-| Admin API client | id `test`, secret `18c7b983c2eaa22a111609ce2b1c435e`, all scopes |
+| Admin API client | `apiClientId` / `apiClientSecret` of `config.yml` (defaults `test` / `18c7b983c2eaa22a111609ce2b1c435e`), all scopes, printed by `ps-infos` |
 
 Web stack: Homebrew Apache (`httpd`) on port 80 with mod_php (`sphp <version>` switches the PHP version), MySQL via brew services. opcache revalidates file timestamps, so code changes are live without restarting Apache; only a new vhost needs a restart. Other folders under `~/www` that do not follow the `prestashop-<s>` pattern are not driven by the tools.
 
 ## Detect the current instance
 
 - A SessionStart hook runs `ps-infos` when a session opens inside `~/www/prestashop-<s>`; its report at the top of the context is authoritative (branch, version, DBs, vhost, HTTP status, login).
-- Otherwise: cwd under `~/www/prestashop-<s>/...` means suffix `<s>`. Run `ps-infos <s>`, or `ps-infos` with no argument from inside the folder.
+- Otherwise: cwd under `~/www/prestashop-<s>/...` means suffix `<s>`. Run `ps-infos <s>`, or `ps-infos` with no argument from inside the folder. `ps-infos --json <s>` gives the same data as JSON (URLs, paths, DB names, booleans) for scripts.
 - Never infer a version from the suffix: `develop`, `92`, `sheriff` only name the instance, `ps-infos` gives the branch and version.
 
 ## Tools
@@ -31,7 +31,7 @@ Aliases from `ps-install-tools/aliases.sh`, also callable by full path `~/dev/ps
 
 | Command | What it does | Notes |
 | --- | --- | --- |
-| `ps-infos <s>` | Report on an instance | read-only, safe anytime |
+| `ps-infos [--json] <s>` | Report on an instance, JSON with `--json` | read-only, safe anytime |
 | `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, `composer install`, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup | On an existing instance the DB is dropped and reinstalled. sudo only when the vhost or hosts entry is new |
 | `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data | |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it | DB only |

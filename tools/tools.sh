@@ -17,8 +17,8 @@ parse_yaml() {
 ask_config() {
     if [ $configAsked -eq 0 ]; then
         configAsked=1
-        echo "You need to update your config first:"
-        echo
+        echo "You need to update your config first (new keys in config.yml.dist, defaults kept without a terminal):" >&2
+        echo >&2
     fi
     read -p "$configName [$defaultValue]: " userValue
     if test "$userValue" = ""; then
@@ -123,8 +123,12 @@ insert_data() {
             echo Authorize Admin API in dev mode
             mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"0\" WHERE \`name\` = \"PS_ADMIN_API_FORCE_DEBUG_SECURED\""
 
-            echo Create default API client
-            $targetFolder/bin/console prestashop:api-client create test --all-scopes --name='Test client' --description='Test client with all scopes' --timeout=3600 --secret=18c7b983c2eaa22a111609ce2b1c435e
+            if [ "$apiClientId" != "" ] && [ "$apiClientSecret" != "" ]; then
+                echo "Create default API client $apiClientId (apiClientId/apiClientSecret from config.yml)"
+                $targetFolder/bin/console prestashop:api-client create $apiClientId --all-scopes --name='Test client' --description='Test client with all scopes' --timeout=3600 --secret=$apiClientSecret
+            else
+                echo "No apiClientId/apiClientSecret in config.yml, skipping API client creation"
+            fi
         fi
     fi
 
