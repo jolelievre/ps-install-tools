@@ -70,13 +70,13 @@ mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` =
 mysql -u root -D $targetDatabase -e "UPDATE \`ps_shop_url\` SET \`domain\` = \"$ngrokDomain\", \`domain_ssl\` = \"$ngrokDomain\""
 
 echo Stoping apache
-sudo brew services stop httpd
+run_sudo "stop Apache to reload the vhost with the ngrok domain" brew services stop httpd
 
 echo Clear shop cache
 rm -fR $targetFolder/var/cache/*
 
 echo Restarting apache
-sudo brew services start httpd
+run_sudo "start Apache with the ngrok domain" brew services start httpd
 
 echo
 echo You can now access your shop to this address:

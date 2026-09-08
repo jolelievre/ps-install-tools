@@ -244,7 +244,7 @@ fi
 
 if [ "$vhostUpdateNeeded" = "1" ]; then
     echo "Restarting apache"
-    sudo brew services restart httpd
+    run_sudo "restart Apache to load the vhost $targetDomain" brew services restart httpd
 fi
 
 stepsIndex=$(($stepsIndex+1))
@@ -255,7 +255,7 @@ hostEnabled=$(cat /etc/hosts | grep $targetDomain)
 
 if test "" = "$hostEnabled"; then
     echo "$stepsIndex / $stepsNb: Updating /etc/hosts file"
-    echo "127.0.0.1       $targetDomain" | sudo tee -a /etc/hosts
+    echo "127.0.0.1       $targetDomain" | run_sudo "add $targetDomain to /etc/hosts" tee -a /etc/hosts
 else
     echo "$stepsIndex / $stepsNb: Domain is already present in /etc/hosts"
 fi

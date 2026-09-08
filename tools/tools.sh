@@ -208,3 +208,60 @@ install_multi_shop_data() {
   cd $BASEDIR
   npm run install-multi-shop-data $targetUrl/admin-dev
 }
+# Prints the instance suffix when the given path is inside an instance folder
+# (${baseFolder}<suffix> or any sub folder), prints nothing otherwise
+detect_suffix_from_path() {
+    case "$1" in
+        "$baseFolder"*)
+            candidate=${1#"$baseFolder"}
+            echo "${candidate%%/*}"
+            ;;
+    esac
+}
+
+# Returns 0 when the database given as argument exists
+db_exists() {
+    found=$(mysql -u root -N -s -e "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$1'" 2>/dev/null)
+    test "$found" != ""
+}
+
+# Prints the PrestaShop version of the project folder given as argument
+get_ps_version() {
+    if test -f "$1/install-dev/install_version.php"; then
+        sed -n "s/.*_PS_INSTALL_VERSION_', *'\([^']*\)'.*/\1/p" "$1/install-dev/install_version.php" | head -n 1
+    elif test -f "$1/install/install_version.php"; then
+        sed -n "s/.*_PS_INSTALL_VERSION_', *'\([^']*\)'.*/\1/p" "$1/install/install_version.php" | head -n 1
+    elif test -f "$1/config/settings.inc.php"; then
+        sed -n "s/.*_PS_VERSION_', *'\([^']*\)'.*/\1/p" "$1/config/settings.inc.php" | head -n 1
+    else
+        echo "-"
+    fi
+}
+
+# Returns 0 when the script is attached to a terminal (stdin may be a pipe, so stdout and stderr are checked too)
+is_interactive() {
+    [ -t 0 ] || [ -t 1 ] || [ -t 2 ]
+}
+
+# Runs a command with sudo, asking for the password only when needed.
+# In a terminal this is a plain sudo (password asked in the terminal as usual).
+# Without a terminal (script driven by an AI agent, a hook, ...) sudo cannot prompt, so the
+# password is asked in a macOS dialog through tools/askpass.sh with a message telling which
+# script needs it and why. On failure or cancel the command to run manually is printed and
+# the sudo exit code is returned, the calling script decides what to do with it.
+# Usage: run_sudo "reason" command [args...]
+run_sudo() {
+    reason=$1
+    shift
+    if is_interactive; then
+        sudo "$@"
+    else
+        askpass="$(cd "$BASEDIR/tools" && pwd)/askpass.sh"
+        SUDO_ASKPASS="$askpass" sudo -A -p "$(basename "$0") $suffix needs administrator rights to: $reason" "$@"
+    fi
+    sudoStatus=$?
+    if [ $sudoStatus -ne 0 ]; then
+        echo "sudo failed or was cancelled ($reason), run this manually: sudo $*" >&2
+    fi
+    return $sudoStatus
+}

@@ -23,7 +23,7 @@ stepsIndex=1
 stepsNb=4
 
 echo "Stopping apache"
-sudo brew services stop httpd
+run_sudo "stop Apache before removing the vhost $targetDomain" brew services stop httpd
 
 ## 1- Remove project folder
 echo "$stepsIndex / $stepsNb: Removing folder $targetFolder"
@@ -44,10 +44,10 @@ enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.
 rm -f $vhostFilePath $enabledVhostFilePath
 
 echo "Restarting apache"
-sudo brew services restart httpd
+run_sudo "restart Apache after removing the vhost $targetDomain" brew services restart httpd
 stepsIndex=$(($stepsIndex+1))
 
 ## 4- Clean /etc/hosts
 echo "$stepsIndex / $stepsNb: Cleaning /etc/hosts from $targetDomain"
 cat /etc/hosts | sed "/^127\.0\.0\.1.*$targetDomain/d" > /tmp/hosts.clean
-sudo mv /tmp/hosts.clean /etc/hosts
+run_sudo "remove $targetDomain from /etc/hosts" mv /tmp/hosts.clean /etc/hosts
