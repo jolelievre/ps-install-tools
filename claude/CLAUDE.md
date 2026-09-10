@@ -34,6 +34,7 @@ Aliases from `ps-install-tools/aliases.sh`, also callable by full path `~/dev/ps
 | `ps-infos [--json] <s>` | Report on an instance, JSON with `--json` | read-only, safe anytime |
 | `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, `composer install`, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup | On an existing instance the DB is dropped and reinstalled. sudo only when the vhost or hosts entry is new |
 | `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data | |
+| `ps-install-classic <s> [version]` | Build the Classic Edition `<version>` with `~/dev/smb_edition_builder` (`_dev/classic-config/fr-FR/config_classic_<version>.yml`), uninstall the instance if it exists (in the background while the build runs), move the release to the instance folder, `ps-install` | Always pass the version: without a terminal a missing or unknown version lists the available ones and aborts (in a terminal an arrow-key menu is shown). Long: the build takes many minutes. sudo when an instance is replaced or the vhost is new. Addons credentials and GitHub token come from `config.yml` |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it | DB only |
 | `ps-install-multi-shop-data <s>` | Add multistore data through the BO (Playwright) | |
 | `ps-backup <s>` | `mysqldump` the DB to `<folder>/var/dump.sql` | |
@@ -48,6 +49,7 @@ Behaviour when an agent runs them (no terminal, stdin is `/dev/null`):
 - `[Y/n]` confirmation prompts read EOF and proceed, so the tools run unattended. Always pass the suffix explicitly, an empty suffix aborts.
 - `sudo` inside the tools opens a macOS password dialog (`tools/askpass.sh`) that only the developer can answer, one dialog per script run. Never prepend `sudo` to a tool and never run the wrapped commands (Apache restart, `/etc/hosts` edits) yourself.
 - `composer install` and `make assets` take minutes: run in background and poll.
+- `ps-install-classic` runs an edition build (many minutes): run in background and poll.
 - `PS_LANGUAGE` and `PS_COUNTRY` environment variables override the install language (`en`) and country (`fr`).
 
 ## Data policy

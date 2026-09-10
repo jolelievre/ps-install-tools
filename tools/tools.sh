@@ -269,3 +269,115 @@ run_sudo() {
     fi
     return $sudoStatus
 }
+
+# Arrow-key menu on the terminal: select_option "question" choice...
+# One argument per choice, the caller decides how the list is built and ordered. The menu is
+# drawn on stderr, the chosen value is printed on stdout. Up/Down (or k/j) move, Enter selects,
+# q or Esc cancels. Long lists scroll in a viewport.
+# Returns 0 when a value was selected, 1 when cancelled, 2 when there is no terminal to draw
+# on (stdin or stderr is not a tty): the caller falls back to a non-interactive behaviour.
+# Usage: value=$(select_option "Which version?" $versions) || echo "no selection"
+select_option() {
+    local question=$1
+    shift
+    local options=("$@")
+    local count=${#options[@]}
+    local selected=0
+    local top=0
+    local visible i more key rest firstDraw escape keyUp keyDown
+
+    if ! test -t 0 || ! test -t 2; then
+        return 2
+    fi
+    if test $count -eq 0; then
+        return 1
+    fi
+
+    # Rows available for the options: keep room for the question and the footer
+    visible=$(( $(tput lines 2>/dev/null || echo 24) - 6 ))
+    if test $visible -lt 3; then
+        visible=3
+    fi
+    if test $visible -gt $count; then
+        visible=$count
+    fi
+
+    escape=$(printf '\033')
+    keyUp=$(printf '\033[A')
+    keyDown=$(printf '\033[B')
+
+    # Hide the cursor while the menu is displayed, restore it on Ctrl-C
+    printf '\033[?25l' >&2
+    trap 'printf "\033[?25h" >&2; exit 130' INT
+
+    echo "$question" >&2
+    firstDraw=1
+    while true; do
+        # Keep the selection inside the viewport
+        if test $selected -lt $top; then
+            top=$selected
+        fi
+        if test $selected -ge $(($top+$visible)); then
+            top=$(($selected-$visible+1))
+        fi
+
+        # Move back to the first option line before redrawing
+        if test $firstDraw = 0; then
+            printf '\033[%dA' $(($visible+1)) >&2
+        fi
+        firstDraw=0
+
+        i=$top
+        while test $i -lt $(($top+$visible)); do
+            printf '\033[2K' >&2
+            if test $i = $selected; then
+                printf '  \033[7m > %s \033[0m\n' "${options[$i]}" >&2
+            else
+                printf '     %s\n' "${options[$i]}" >&2
+            fi
+            i=$(($i+1))
+        done
+        more=""
+        if test $top -gt 0; then
+            more="$more, more above"
+        fi
+        if test $(($top+$visible)) -lt $count; then
+            more="$more, more below"
+        fi
+        printf '\033[2K  (%d/%d) Up/Down to move, Enter to select, q to cancel%s\n' $(($selected+1)) $count "$more" >&2
+
+        read -rsn1 key
+        if test "$key" = "$escape"; then
+            # Arrow keys send Esc [ A/B, a bare Esc arrives alone (1 second timeout, bash 3.2 has no fractions)
+            read -rsn2 -t 1 rest
+            key="$key$rest"
+        fi
+        case "$key" in
+            "$keyUp"|k)
+                if test $selected -gt 0; then
+                    selected=$(($selected-1))
+                fi
+                ;;
+            "$keyDown"|j)
+                if test $selected -lt $(($count-1)); then
+                    selected=$(($selected+1))
+                fi
+                ;;
+            "")
+                break
+                ;;
+            q|Q|"$escape")
+                selected=-1
+                break
+                ;;
+        esac
+    done
+
+    printf '\033[?25h' >&2
+    trap - INT
+    if test $selected -ge 0; then
+        echo "${options[$selected]}"
+        return 0
+    fi
+    return 1
+}

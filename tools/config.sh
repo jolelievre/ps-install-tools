@@ -24,6 +24,7 @@ else
         echo "ps-install develop                            Use develop suffix"
         echo "ps-install 178 1.7.8.x                        Use 178 suffix and updtream branch 1.7.8.x"
         echo "ps-install feature jolelievre:feature-branch  Use the repository from use jolelievre with its branch feature-branch"
+        echo "ps-install-classic classic 9.2.x              Build the Classic Edition 9.2.x with smb_edition_builder and install it as classic"
         echo
         echo "Enter a suffix for your installation which will define the folder, local domain and name of your shop"
         echo "Example: suffix = module => folder = ${baseFolder}module, domain = ${baseDomain}module"

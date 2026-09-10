@@ -27,6 +27,7 @@ Source `aliases.sh` from your shell profile to get the `ps-*` aliases, or call t
 | `ps-infos [--json] <s>` | Read-only report: URLs, DBs (existence), folder, git branch, PrestaShop version, dump, vhost, hosts entry, HTTP status, PHP versions, BO login. `--json` prints the same data as JSON for scripts and agents |
 | `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, composer install, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup |
 | `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data |
+| `ps-install-classic <s> [version]` | Build the Classic Edition `<version>` with `smb_edition_builder` (menu of the available versions when omitted or unknown), uninstall the instance if it exists (in the background while the build runs), move the release to the instance folder and `ps-install` it (see below) |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it |
 | `ps-install-multi-shop-data <s>` | Add multistore data through the BO (Playwright) |
 | `ps-backup <s>` | `mysqldump` the DB to `<folder>/var/dump.sql` |
@@ -40,9 +41,38 @@ When no suffix is given, the scripts detect it from the current folder if it is 
 
 `PS_LANGUAGE` and `PS_COUNTRY` override the install language (`en`) and country (`fr`).
 
+## Classic Edition
+
+`ps-install-classic <s> [version]` builds the Classic Edition with a local clone of [smb_edition_builder](https://github.com/PrestaShopCorp/smb_edition_builder) and installs the result as a regular instance:
+
+```bash
+ps-install-classic classic                # pick the version in an arrow-key menu (newest first)
+ps-install-classic classic 9.2.x          # _dev/classic-config/fr-FR/config_classic_9.2.x.yml
+ps-install-classic classic-828 8.2.8
+ps-install-classic classic-91 9.1.5-5.0
+```
+
+When `<version>` is omitted or has no config file, an arrow-key menu of the available versions (reverse alphabetical order, newest first) is shown in the terminal; without a terminal the versions are listed and the script aborts. It also fails early when the builder folder or its `vendor` is missing, or when a credential is empty. When an instance already matches the suffix it is uninstalled (`ps-uninstall`, one sudo prompt before the build) in the background while the build runs, since a build cannot be replaced in place; its log is written to `<tmpFolder>/ps-install-classic-<s>-uninstall.log`. The release built in `workdir/tools/build/releases/prestashop` is then moved to the instance folder, `admin` and `install` are renamed `admin-dev` and `install-dev`, and `ps-install <s>` finishes the installation.
+
+Keys in `config.yml`:
+
+| Key | Value |
+| --- | --- |
+| `editionBuilderFolder` | Clone of `smb_edition_builder` with `composer install` done (default `$HOME/dev/smb_edition_builder`) |
+| `editionLocale` | Config folder under `_dev/classic-config/` (default `fr-FR`) |
+| `addonsUserAgent`, `addonsUser`, `addonsPassword` | Addons credentials passed as `-A` and `-u user:password` to download paid modules |
+| `githubToken` | GitHub token passed as `-t` to download corp modules |
+| `githubEmail`, `githubName` | Git identity passed as `-E` / `-N`; empty means the local git config, then the builder defaults |
+
+`addonsPassword` and `githubToken` are secrets: they only live in the gitignored `config.yml`, never on the command line nor in the shell history. The build uses the current `node` (the builder README asks for node 14 on 8.x and node 20 on 9.x), switch it before running the command if needed.
+
 ## sudo
 
 Only Apache restarts and `/etc/hosts` edits need `sudo` (`ps-install` on a new instance, `ps-uninstall`, `ps-ngrok`). In a terminal the password is asked as usual. Without a terminal (scripts driven by an AI agent) `run_sudo` in `tools/tools.sh` uses `tools/askpass.sh`: a macOS dialog titled "PrestaShop install tools" asks for the password and states which script needs it and why. Cancelling makes the step fail and prints the command to run manually.
+
+## Helpers for script authors (`tools/tools.sh`)
+
+`select_option "question" choice...` draws an arrow-key menu on the terminal (Up/Down or k/j, Enter selects, q or Esc cancels, long lists scroll) and prints the chosen value: `value=$(select_option "Which version?" $versions)`. Returns 1 when cancelled and 2 when there is no terminal, so the caller can fall back to a non-interactive behaviour. The caller builds and orders the list.
 
 ## AI agent integration (`claude/`)
 
