@@ -223,6 +223,16 @@ detect_suffix_from_path() {
     esac
 }
 
+# Sets the target variables of an instance from its suffix: folder, domain, url, database and name
+set_target_instance() {
+    suffix=$1
+    targetFolder=${baseFolder}${suffix}
+    targetDomain=`echo $domainPlaceholder | sed s/{SUFFIX}/$suffix/`
+    targetUrl="http://${targetDomain}"
+    targetDatabase=${baseDatabase}${suffix}
+    targetName="Prestashop ${suffix}"
+}
+
 # Returns 0 when the database given as argument exists
 db_exists() {
     found=$(mysql -u root -N -s -e "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$1'" 2>/dev/null)

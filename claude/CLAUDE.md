@@ -42,7 +42,7 @@ Aliases from `ps-install-tools/aliases.sh`, also callable by full path `~/dev/ps
 | `ps-install-module <s> <folder\|zip>` | Copy a module into the instance and install it | |
 | `ps-upgrade <s>` | Run the upgrade module from the BO (Playwright) | |
 | `ps-ngrok <s>` | Expose the instance through ngrok (rewrites vhost, `.htaccess`, shop domain in DB) | sudo, changes the shop domain |
-| `ps-uninstall <s>` | Delete folder, DB, test DB, vhost, hosts entry | DESTRUCTIVE: removes the working copy and any uncommitted work. Always confirm with the developer first |
+| `ps-uninstall <s> [<s2> ...]` | Delete folder, DB, test DB, vhost, hosts entry of every listed instance | Accepts several suffixes separated by spaces, uninstalled one after the other (one confirmation, one Apache stop/restart, one `/etc/hosts` cleanup, so at most two sudo dialogs). DESTRUCTIVE: removes the working copies and any uncommitted work. Always confirm with the developer first |
 
 Behaviour when an agent runs them (no terminal, stdin is `/dev/null`):
 

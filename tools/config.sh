@@ -40,11 +40,7 @@ if test "$suffix" = ""; then
     exit 1
 fi
 
-targetFolder=${baseFolder}${suffix}
-targetDomain=`echo $domainPlaceholder | sed s/{SUFFIX}/$suffix/`
-targetUrl="http://${targetDomain}"
-targetDatabase=${baseDatabase}${suffix}
-targetName="Prestashop ${suffix}"
+set_target_instance "$suffix"
 
 # Set quietInfos=1 before sourcing this file to skip the summary (ps-infos --json)
 if test "$quietInfos" != "1"; then

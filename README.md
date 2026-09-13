@@ -35,7 +35,14 @@ Source `aliases.sh` from your shell profile to get the `ps-*` aliases, or call t
 | `ps-install-module <s> <folder\|zip>` | Copy a module into the instance and install it |
 | `ps-upgrade <s>` | Run the upgrade module from the BO (Playwright) |
 | `ps-ngrok <s>` | Expose the instance through ngrok |
-| `ps-uninstall <s>` | Delete folder, DB, test DB, vhost and hosts entry (destructive) |
+| `ps-uninstall <s> [<s2> ...]` | Delete folder, DB, test DB, vhost and hosts entry of every listed instance (destructive) |
+
+`ps-uninstall` is the only command that takes several suffixes: they are uninstalled one after the other, with a single confirmation listing them all, a single Apache stop/restart around the whole list and a single `/etc/hosts` cleanup, so `sudo` is asked at most twice whatever the number of instances.
+
+```bash
+ps-uninstall qa-1234                      # one instance
+ps-uninstall qa-1234 qa-5678 classic      # three instances, one confirmation
+```
 
 When no suffix is given, the scripts detect it from the current folder if it is inside an instance (`~/www/prestashop-<s>/...`), otherwise they ask for it. Without a terminal an empty suffix aborts.
 
@@ -71,6 +78,8 @@ Keys in `config.yml`:
 Only Apache restarts and `/etc/hosts` edits need `sudo` (`ps-install` on a new instance, `ps-uninstall`, `ps-ngrok`). In a terminal the password is asked as usual. Without a terminal (scripts driven by an AI agent) `run_sudo` in `tools/tools.sh` uses `tools/askpass.sh`: a macOS dialog titled "PrestaShop install tools" asks for the password and states which script needs it and why. Cancelling makes the step fail and prints the command to run manually.
 
 ## Helpers for script authors (`tools/tools.sh`)
+
+`set_target_instance <s>` sets the variables of an instance from its suffix (`suffix`, `targetFolder`, `targetDomain`, `targetUrl`, `targetDatabase`, `targetName`). `tools/config.sh` calls it for the suffix it resolved; a script working on several instances (`ps-uninstall`) calls it again for each suffix of its list.
 
 `select_option "question" choice...` draws an arrow-key menu on the terminal (Up/Down or k/j, Enter selects, q or Esc cancels, long lists scroll) and prints the chosen value: `value=$(select_option "Which version?" $versions)`. Returns 1 when cancelled and 2 when there is no terminal, so the caller can fall back to a non-interactive behaviour. The caller builds and orders the list.
 
