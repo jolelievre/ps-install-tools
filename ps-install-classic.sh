@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Usage: ps-install-classic <suffix> [version]
+# Usage: ps-install-classic <suffix> [version] [--php <php version>]
 #
 # Builds the PrestaShop Classic Edition <version> with the smb_edition_builder project
 # (config _dev/classic-config/<editionLocale>/config_classic_<version>.yml), uninstalls the
@@ -25,12 +25,18 @@ usage() {
     echo "ps-install-classic classic 9.2.x           Build config_classic_9.2.x.yml and install it as the 'classic' instance"
     echo "ps-install-classic classic-828 8.2.8       Build config_classic_8.2.8.yml and install it as the 'classic-828' instance"
     echo "ps-install-classic classic-91 9.1.5-5.0    Build config_classic_9.1.5-5.0.yml and install it as the 'classic-91' instance"
+    echo "ps-install-classic classic 9.2.x --php 8.4 Same, on PHP 8.4"
 }
 
 fail() {
     echo "$1" >&2
     exit 1
 }
+
+# --php <version> is given to ps-install
+source "$(dirname "$0")/tools/php.sh"
+parse_php_option "$@" || exit 1
+set -- $otherArgs
 
 if test $# -lt 1 || test $# -gt 2; then
     usage >&2
@@ -44,8 +50,15 @@ echo
 BASEDIR=$(cd "$(dirname "$0")" && pwd)
 source $BASEDIR/tools/config.sh
 version=$2
+# The replaced instance keeps its PHP version by default
+phpVersion=${phpVersionOption:-$instancePhpVersion}
+# The builder runs with the global PHP, not the one of the replaced instance
+PATH=$basePath
 
 ## Checks before anything is touched
+if test "$phpVersion" != ""; then
+    check_php_requirements "$phpVersion" || exit 1
+fi
 if test "$editionBuilderFolder" = "" || ! test -f "$editionBuilderFolder/bin/console"; then
     fail "Edition builder not found in '$editionBuilderFolder': editionBuilderFolder in $BASEDIR/config.yml must point to a clone of smb_edition_builder"
 fi
@@ -222,4 +235,8 @@ echo
 
 ## 5- Install the instance (its own confirmation is covered by the one above)
 echo "$stepsIndex / $stepsNb: Installing the instance $suffix with ps-install"
-echo Y | $BASEDIR/ps-install.sh $suffix
+if test "$phpVersion" != ""; then
+    echo Y | $BASEDIR/ps-install.sh $suffix --php $phpVersion
+else
+    echo Y | $BASEDIR/ps-install.sh $suffix
+fi

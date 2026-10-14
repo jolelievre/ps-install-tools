@@ -25,17 +25,19 @@ Source `aliases.sh` from your shell profile to get the `ps-*` aliases, or call t
 | Command | What it does |
 | --- | --- |
 | `ps-infos [--json] <s>` | Read-only report: URLs, DBs (existence), folder, git branch, PrestaShop version, dump, vhost, hosts entry, HTTP status, PHP versions, BO login. `--json` prints the same data as JSON for scripts and agents |
-| `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, composer install, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup |
+| `ps-list [--json]` | One line per instance and an HTML report in `~/www/instances.html`, or a JSON array of `ps-infos --json` objects |
+| `ps-install <s> [branch \| user:branch] [--php <version>]` | Create or update an instance: clone, checkout, composer install, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup |
 | `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data |
-| `ps-install-classic <s> [version]` | Build the Classic Edition `<version>` with `smb_edition_builder` (menu of the available versions when omitted or unknown), uninstall the instance if it exists (in the background while the build runs), move the release to the instance folder and `ps-install` it (see below) |
+| `ps-install-classic <s> [version] [--php <version>]` | Build the Classic Edition `<version>` with `smb_edition_builder` (menu of the available versions when omitted or unknown), uninstall the instance if it exists (in the background while the build runs), move the release to the instance folder and `ps-install` it (see below) |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it |
 | `ps-install-multi-shop-data <s>` | Add multistore data through the BO (Playwright) |
 | `ps-backup <s>` | `mysqldump` the DB to `<folder>/var/dump.sql` |
 | `ps-reset <s>` | Drop the DB, reload `<folder>/var/dump.sql`, clear cache |
 | `ps-install-module <s> <folder\|zip>` | Copy a module into the instance and install it |
 | `ps-upgrade <s>` | Run the upgrade module from the BO (Playwright) |
+| `ps-php [<s>] [<version> \| global \| doctor]` | Show or change the PHP version of an instance (CLI and PHP-FPM pool), see below |
 | `ps-ngrok <s>` | Expose the instance through ngrok |
-| `ps-uninstall <s> [<s2> ...]` | Delete folder, DB, test DB, vhost and hosts entry of every listed instance (destructive) |
+| `ps-uninstall <s> [<s2> ...]` | Delete folder, DB, test DB, PHP-FPM pool, vhost and hosts entry of every listed instance (destructive) |
 
 `ps-uninstall` is the only command that takes several suffixes: they are uninstalled one after the other, with a single confirmation listing them all, a single Apache stop/restart around the whole list and a single `/etc/hosts` cleanup, so `sudo` is asked at most twice whatever the number of instances.
 
@@ -72,6 +74,25 @@ Keys in `config.yml`:
 | `githubEmail`, `githubName` | Git identity passed as `-E` / `-N`; empty means the local git config, then the builder defaults |
 
 `addonsPassword` and `githubToken` are secrets: they only live in the gitignored `config.yml`, never on the command line nor in the shell history. The build uses the current `node` (the builder README asks for node 14 on 8.x and node 20 on 9.x), switch it before running the command if needed.
+
+## PHP version per instance
+
+By default an instance uses the global PHP (`php` of the PATH, PHP handler of `httpd.conf`). It can be pinned to its own version, for the CLI and the web:
+
+```bash
+ps-install 178 1.7.8.x --php 7.4          # new instance on PHP 7.4
+ps-php develop 8.4                        # pin an existing instance to PHP 8.4
+ps-php 8.2                                # same for the instance of the current folder
+ps-php develop                            # show the PHP of the instance
+ps-php develop global                     # back to the global PHP
+ps-php doctor                             # check versions, Apache, PHP-FPM masters, pools and instances
+```
+
+- **CLI**: the version is stored in `.php-version` at the root of the instance (excluded from git). The scripts put the bin folder of `php@<version>` first in the PATH, so `composer`, `bin/console` and every sub process use it.
+- **Web**: the instance gets its own PHP-FPM pool on `<fpmFolder>/sockets/<s>.sock`, run by one master per version started at login by a LaunchAgent (no sudo). PHP errors go to `~/www/var/logs/prestashop-<s>.php-error.log`.
+- Moving between two versions keeps the socket, so Apache is not restarted. Only the first pin and the return to `global` change the vhost and restart Apache.
+
+Requirements: `brew install php@<version>` (older versions from the `shivammathur/php` tap; each version has its own extensions, xdebug included) and Apache loading `mod_proxy` and `mod_proxy_fcgi`. mod_php can stay loaded for the other instances, as long as the global PHP handler of `httpd.conf` does not depend on `proxy_fcgi_module`. `ps-php doctor` checks the setup. `fpmFolder` in `config.yml` sets where masters, pools and sockets go (default `$HOME/www/var/php-fpm`, keep it short: socket paths are limited to 104 characters).
 
 ## sudo
 

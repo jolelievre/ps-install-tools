@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source $BASEDIR/tools/php.sh
+
 parse_yaml() {
    local prefix=$2
    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
@@ -51,6 +53,7 @@ load_config() {
 }
 
 insert_data() {
+    require_instance_php || exit 1
     clear_cache
     cd $targetFolder
     if test -f $targetFolder/install-dev/index_cli.php; then
@@ -144,6 +147,7 @@ insert_data() {
 }
 
 clear_cache() {
+    require_instance_php || exit 1
     cd $targetFolder
     echo Removing cache files..
     rm -fR var/cache/*
@@ -231,6 +235,23 @@ set_target_instance() {
     targetUrl="http://${targetDomain}"
     targetDatabase=${baseDatabase}${suffix}
     targetName="Prestashop ${suffix}"
+    use_instance_php
+}
+
+# Writes the Apache vhost of the current instance in the file given as argument
+write_vhost() {
+    local baseLog="$HOME/www/var/logs/prestashop-"
+    cat > $1 <<- EOM
+<VirtualHost *:80>
+    ServerAdmin ${email}
+    DocumentRoot "${targetFolder}"
+    ServerName "${targetDomain}"
+    ServerAlias "${targetDomain}"
+    ErrorLog "${baseLog}${suffix}.error.log"
+    CustomLog "${baseLog}${suffix}.access.log" common
+$(php_vhost_handler)
+</VirtualHost>
+EOM
 }
 
 # Returns 0 when the database given as argument exists

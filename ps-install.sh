@@ -4,7 +4,22 @@ echo "Installing a new local prestashop instance"
 echo
 
 BASEDIR=$(dirname "$0")
+
+# --php <version> pins the PHP version of the instance
+source $BASEDIR/tools/php.sh
+parse_php_option "$@" || exit 1
+set -- $otherArgs
+
 source $BASEDIR/tools/config.sh
+
+requestedPhpVersion=$phpVersionOption
+if test "$requestedPhpVersion" = ""; then
+    requestedPhpVersion=$instancePhpVersion
+fi
+if test "$requestedPhpVersion" != ""; then
+    check_php_requirements "$requestedPhpVersion" || exit 1
+    echo "PHP version:        $requestedPhpVersion"
+fi
 
 echo "Upstream repository: $upstreamGithub"
 echo "Origin repository: $originGithub"
@@ -162,6 +177,14 @@ stepsIndex=$(($stepsIndex+1))
 # 2- Run composer install
 echo "$stepsIndex / $stepsNb: Install vendors"
 cd $targetFolder
+# The folder may have just been created
+if test "$phpVersionOption" != ""; then
+    pin_instance_php "$phpVersionOption"
+else
+    use_instance_php
+fi
+require_instance_php || exit 1
+echo "PHP used: $instancePhp ($(php -r 'echo PHP_VERSION;'))"
 
 if test -f composer.json; then
     echo "Run composer install"
@@ -197,33 +220,42 @@ echo
 echo "$stepsIndex / $stepsNb: Prepare apache vhost"
 vhostFilePath="/opt/homebrew/etc/httpd/extra/sites-available/$targetDomain.conf"
 vhostUpdateNeeded=0
+vhostPhpUpdateNeeded=0
 if test -f $vhostFilePath; then
     echo "Vhost config is already available"
     matchedDomain=`cat $vhostFilePath | grep $targetDomain`
     if [ "$matchedDomain" = "" ]; then
         echo Could not find domain in vhost file it needs to be updated
         vhostUpdateNeeded=1
+    elif ! vhost_php_up_to_date $vhostFilePath; then
+        echo Vhost PHP handler does not match the PHP of the instance it needs to be updated
+        vhostPhpUpdateNeeded=1
     fi
 else
     vhostUpdateNeeded=1
 fi
 
+if test "$instancePhpVersion" != ""; then
+    if ! apache_has_proxy_fcgi; then
+        print_apache_fpm_requirements
+        exit 1
+    fi
+    echo "Serve the instance with PHP-FPM $instancePhpVersion"
+    enable_instance_fpm || exit 1
+else
+    disable_instance_fpm
+fi
+
 if [ "$vhostUpdateNeeded" = "1" ]; then
-    baseLog="$HOME/www/var/logs/prestashop-"
     echo "Setting vhost config in $vhostFilePath:"
-    cat > $vhostFilePath <<- EOM
-<VirtualHost *:80>
-    ServerAdmin ${email}
-    DocumentRoot "${targetFolder}"
-    ServerName "${targetDomain}"
-    ServerAlias "${targetDomain}"
-    ErrorLog "${baseLog}${suffix}.error.log"
-    CustomLog "${baseLog}${suffix}.access.log" common
-</VirtualHost>
-EOM
+    write_vhost $vhostFilePath
     echo
     cat $vhostFilePath
     echo
+elif [ "$vhostPhpUpdateNeeded" = "1" ]; then
+    echo "Updating the PHP handler of the vhost $vhostFilePath"
+    update_vhost_php_handler $vhostFilePath
+    vhostUpdateNeeded=1
 fi
 
 enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.conf"

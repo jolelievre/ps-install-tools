@@ -64,6 +64,8 @@ for suffix in $suffixes; do
     echo "  Drop database test_$targetDatabase"
     mysql -u root -e "DROP DATABASE IF EXISTS \`test_$targetDatabase\`;"
 
+    disable_instance_fpm | sed 's/^/  /'
+
     echo "  Removing apache config for $targetDomain"
     vhostFilePath="/opt/homebrew/etc/httpd/extra/sites-available/$targetDomain.conf"
     enabledVhostFilePath="/opt/homebrew/etc/httpd/extra/sites-enabled/$targetDomain.conf"

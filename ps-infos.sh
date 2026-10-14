@@ -69,7 +69,14 @@ if test $vhostEnabled = 1; then
     accessLog=$(sed -n 's/.*CustomLog "\(.*\)" .*/\1/p' "$vhostFile" | head -n 1)
 fi
 apachePhp=$(sed -n 's#^LoadModule php_module .*/php@\([0-9.]*\)/.*#\1#p' /opt/homebrew/etc/httpd/httpd.conf 2>/dev/null | head -n 1)
+# PHP of the instance, see use_instance_php
 cliPhp=$(php -r 'echo PHP_VERSION;' 2>/dev/null)
+fpmPoolVersion=$(fpm_pool_version "$suffix")
+fpmSocket=""
+if test "$fpmPoolVersion" != ""; then
+    fpmSocket=$(instance_fpm_socket)
+fi
+fpmRunning=$(check test -S "$(instance_fpm_socket)")
 
 ## Output
 
@@ -115,6 +122,11 @@ if test $json = 1; then
   "access_log": $(json_string "$accessLog"),
   "php_apache": $(json_string "$apachePhp"),
   "php_cli": $(json_string "$cliPhp"),
+  "php_instance": $(json_string "$instancePhpVersion"),
+  "php_instance_installed": $(json_bool $(check test "$instancePhp" != "")),
+  "php_fpm_pool_version": $(json_string "$fpmPoolVersion"),
+  "php_fpm_socket": $(json_string "$fpmSocket"),
+  "php_fpm_running": $(json_bool $fpmRunning),
   "bo_login": {"email": $(json_string "$email"), "password": $(json_string "$password")},
   "api_client": {"client_id": $(json_string "$apiClientId"), "client_secret": $(json_string "$apiClientSecret")}
 }
@@ -160,8 +172,18 @@ if test $vhostEnabled = 1; then
 else
     echo "HTTP status (FO):   n/a (no vhost enabled)"
 fi
-echo "PHP (Apache):       ${apachePhp:--} (switch with sphp)"
-echo "PHP (CLI):          ${cliPhp:--}"
+if test "$fpmPoolVersion" != ""; then
+    echo "PHP (web):          PHP-FPM $fpmPoolVersion pool, socket $(if test $fpmRunning = 1; then echo up; else echo DOWN; fi) ($fpmSocket)"
+else
+    echo "PHP (web):          global PHP handler of httpd.conf${apachePhp:+ (mod_php $apachePhp)}, pin a version with ps-php"
+fi
+if test "$instancePhpVersion" = ""; then
+    echo "PHP (CLI):          ${cliPhp:--} (global)"
+elif test "$instancePhp" = ""; then
+    echo "PHP (CLI):          $instancePhpVersion from .php-version, NOT INSTALLED (brew install php@$instancePhpVersion)"
+else
+    echo "PHP (CLI):          ${cliPhp:--} (from .php-version)"
+fi
 echo
 
 echo "BO login:           $email / $password"

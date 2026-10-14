@@ -23,6 +23,7 @@ else
         echo "ps-install                                    Will ask to specify suffix and branch parameters interatively"
         echo "ps-install develop                            Use develop suffix"
         echo "ps-install 178 1.7.8.x                        Use 178 suffix and updtream branch 1.7.8.x"
+        echo "ps-install 178 1.7.8.x --php 7.4              Same with PHP 7.4 for this instance only (CLI and PHP-FPM pool)"
         echo "ps-install feature jolelievre:feature-branch  Use the repository from use jolelievre with its branch feature-branch"
         echo "ps-install-classic classic 9.2.x              Build the Classic Edition 9.2.x with smb_edition_builder and install it as classic"
         echo

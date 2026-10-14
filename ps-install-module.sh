@@ -34,6 +34,7 @@ cp -R $moduleFolderPath/* $targetModulePath
 if test -f $targetFolder/bin/console; then
     # In 1.7 we have use a command to install the module
     cd $targetFolder
+    require_instance_php || exit 1
     php ./bin/console prestashop:module install $moduleName
 else
     # This is for 1.6 versions, we should check the target version an run the command for 1.7 versions

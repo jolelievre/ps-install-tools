@@ -1,5 +1,6 @@
 baseFolder: "$HOME/www/prestashop-"
 tmpFolder: "/tmp"
+fpmFolder: "$HOME/www/var/php-fpm"
 domainPlaceholder: "prestashop.{SUFFIX}.localhost"
 baseDatabase: "prestashop-"
 upstreamGithub: "git@github.com:PrestaShop/PrestaShop.git"
