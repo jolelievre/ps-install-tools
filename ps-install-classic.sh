@@ -118,16 +118,7 @@ else
     echo "No existing instance matches the suffix $suffix, nothing to uninstall."
 fi
 echo
-read -n 1 -p "Do you confirm build and installation? [Y/n] " confirm
-
-if test "$confirm" = "n"; then
-    exit 1
-else
-    if test "$confirm" = "N"; then
-        exit 1
-    fi
-fi
-echo
+confirm_or_exit "Do you confirm build and installation?"
 
 stepsIndex=1
 stepsNb=5

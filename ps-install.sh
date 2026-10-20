@@ -36,16 +36,7 @@ if ! test "$contributorGithub" = ""; then
 fi
 
 echo
-read -n 1 -p "Do you confirm installation? [Y/n] " confirm
-
-if test "$confirm" = "n"; then
-    exit 1
-else
-    if test "$confirm" = "N"; then
-        exit 1
-    fi
-fi
-echo
+confirm_or_exit "Do you confirm installation?"
 
 ## Start installation
 stepsIndex=1

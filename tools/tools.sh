@@ -117,6 +117,9 @@ insert_data() {
         mysql -u root -D $targetDatabase -e "UPDATE \`ps_configuration\` SET \`value\` = \"$smtpPort\" WHERE \`name\` = \"PS_MAIL_SMTP_PORT\""
     fi
 
+    # The container built before the installation knows no module: rebuilt before the API client
+    # creation, otherwise --all-scopes resolves to an empty list
+    clear_cache
     if [ -f $targetFolder/bin/console ]; then
         hasClientCommand=`./bin/console | grep prestashop:api-client > /dev/null; echo $?`
         if [ "$hasClientCommand" = "0" ]; then
@@ -255,6 +258,21 @@ get_ps_version() {
 # Returns 0 when the script is attached to a terminal (stdin may be a pipe, so stdout and stderr are checked too)
 is_interactive() {
     [ -t 0 ] || [ -t 1 ] || [ -t 2 ]
+}
+
+# Asks a yes/no confirmation in a terminal and exits on n/N. Without a terminal on stdin (script
+# driven by an AI agent, a hook, ...) nobody can answer: the question is printed and assumed yes.
+# Usage: confirm_or_exit "Do you confirm X?"
+confirm_or_exit() {
+    if [ -t 0 ]; then
+        read -n 1 -p "$1 [Y/n] " confirm
+        echo
+        if test "$confirm" = "n" || test "$confirm" = "N"; then
+            exit 1
+        fi
+    else
+        echo "$1 [Y/n] yes (no terminal)"
+    fi
 }
 
 # Runs a command with sudo, asking for the password only when needed.

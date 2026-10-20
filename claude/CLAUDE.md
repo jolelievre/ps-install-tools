@@ -46,7 +46,7 @@ Aliases from `ps-install-tools/aliases.sh`, also callable by full path `~/dev/ps
 
 Behaviour when an agent runs them (no terminal, stdin is `/dev/null`):
 
-- `[Y/n]` confirmation prompts read EOF and proceed, so the tools run unattended. Always pass the suffix explicitly, an empty suffix aborts.
+- `[Y/n]` confirmation prompts are skipped without a terminal on stdin (the question is printed, the answer is yes), so the tools run unattended; `ps-uninstall` keeps its prompt. Always pass the suffix explicitly, an empty suffix aborts.
 - `sudo` inside the tools opens a macOS password dialog (`tools/askpass.sh`) that only the developer can answer, one dialog per script run. Never prepend `sudo` to a tool and never run the wrapped commands (Apache restart, `/etc/hosts` edits) yourself.
 - `composer install` and `make assets` take minutes: run in background and poll.
 - `ps-install-classic` runs an edition build (many minutes): run in background and poll.
