@@ -24,6 +24,9 @@ else
         echo "ps-install develop                            Use develop suffix"
         echo "ps-install 178 1.7.8.x                        Use 178 suffix and updtream branch 1.7.8.x"
         echo "ps-install feature jolelievre:feature-branch  Use the repository from use jolelievre with its branch feature-branch"
+        echo "ps-install qa-1234 https://github.com/PrestaShop/PrestaShop/pull/1234  Use the head repository and branch of the pull request"
+        echo "ps-install feature https://github.com/jolelievre/PrestaShop/tree/feature-branch  Use the repository and branch of a GitHub branch URL"
+        echo "ps-install feature git@github.com:jolelievre/PrestaShop.git#feature-branch  Use a repository URL (SSH or HTTPS) and branch, its default branch without #branch"
         echo "ps-install-classic classic 9.2.x              Build the Classic Edition 9.2.x with smb_edition_builder and install it as classic"
         echo
         echo "Enter a suffix for your installation which will define the folder, local domain and name of your shop"

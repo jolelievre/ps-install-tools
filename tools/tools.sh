@@ -236,6 +236,104 @@ set_target_instance() {
     targetName="Prestashop ${suffix}"
 }
 
+# Sets contributor, contributorGithub, remoteBranch and branch (local name) from a branch argument:
+# "branch", "user:branch", a pull request URL (resolved with gh to its head repository and branch),
+# a GitHub branch URL (https://github.com/user/repo/tree/branch) or a repository URL (SSH or HTTPS)
+# with an optional "#branch", the repository default branch being used without it
+parse_branch_argument() {
+    contributor=''
+    contributorGithub=''
+    pullRequestUrl=''
+    repository='PrestaShop'
+    remoteBranch=''
+    case "$1" in
+        https://github.com/*/pull/*)
+            pullRequestUrl=$1
+            prHead=$(gh pr view "$1" --json headRepositoryOwner,headRepository,headRefName --jq '[.headRepositoryOwner.login, .headRepository.name, .headRefName] | @tsv')
+            if [ $? -ne 0 ]; then
+                echo "Could not read pull request $1 with gh" >&2
+                return 1
+            fi
+            IFS=$'\t' read -r contributor repository remoteBranch <<< "$prHead"
+            # A deleted fork leaves no head repository
+            if [ "$repository" = "" ] || [ "$repository" = "null" ]; then
+                echo "The head repository of pull request $1 no longer exists" >&2
+                return 1
+            fi
+            ;;
+        https://github.com/*/*/tree/*)
+            repositoryPath=${1#https://github.com/}
+            remoteBranch=${repositoryPath#*/*/tree/}
+            repositoryPath=${repositoryPath%%/tree/*}
+            ;;
+        git@github.com:*/*|https://github.com/*/*)
+            repositoryPath=${1#git@github.com:}
+            repositoryPath=${repositoryPath#https://github.com/}
+            case "$repositoryPath" in
+                *#*)
+                    remoteBranch=${repositoryPath#*#}
+                    repositoryPath=${repositoryPath%%#*}
+                    ;;
+            esac
+            ;;
+        *://*|*@*:*)
+            echo "Unsupported URL $1, use a pull request URL, a GitHub repository or branch URL, user:branch or branch" >&2
+            return 1
+            ;;
+        *:*)
+            contributor=${1%%:*}
+            remoteBranch=${1#*:}
+            ;;
+        *)
+            remoteBranch=$1
+            ;;
+    esac
+
+    if [ "$repositoryPath" != "" ]; then
+        repositoryPath=${repositoryPath%/}
+        repositoryPath=${repositoryPath%.git}
+        contributor=${repositoryPath%%/*}
+        repository=${repositoryPath#*/}
+        repositoryPath=''
+        if [ "$contributor" = "" ] || [ "$repository" = "" ] || [[ "$repository" == */* ]]; then
+            echo "Could not read the user and repository from $1" >&2
+            return 1
+        fi
+    fi
+    if [ "$contributor" != "" ]; then
+        contributorGithub="git@github.com:$contributor/$repository.git"
+    fi
+
+    if [ "$remoteBranch" = "" ]; then
+        if [ "$contributor" = "" ]; then
+            echo "No branch found in $1" >&2
+            return 1
+        fi
+        remoteBranch=$(gh repo view "$contributor/$repository" --json defaultBranchRef --jq .defaultBranchRef.name)
+        if [ $? -ne 0 ] || [ "$remoteBranch" = "" ]; then
+            echo "Could not read the default branch of $contributor/$repository with gh" >&2
+            return 1
+        fi
+        echo "No branch given, using the default branch of $contributor/$repository: $remoteBranch"
+    fi
+    branch=$remoteBranch
+
+    if [ "$contributorGithub" = "$originGithub" ]; then
+        contributor='origin'
+    elif [ "$contributorGithub" = "$upstreamGithub" ]; then
+        contributor='upstream'
+    fi
+
+    # A fork branch named like a base branch (often develop) would be confused with the local base branch
+    if [ "$contributor" != "" ] && [ "$contributor" != "upstream" ]; then
+        case "$branch" in
+            develop|[0-9]*.x)
+                branch="$contributor-$branch"
+                ;;
+        esac
+    fi
+}
+
 # Returns 0 when the database given as argument exists
 db_exists() {
     found=$(mysql -u root -N -s -e "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$1'" 2>/dev/null)

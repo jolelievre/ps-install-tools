@@ -12,20 +12,9 @@ echo "Origin repository: $originGithub"
 contributor=''
 branch=''
 if test $# -gt 1; then
-    if [[ $2 == *":"* ]]; then
-        IFS=':'
-        read -a branches <<< "$2"
-        contributor=${branches[0]}
-        contributorGithub="git@github.com:$contributor/PrestaShop.git"
-        IFS=' '
-
-        # If the contributor matches the origin repository we use origin as the contributor
-        if test "$contributorGithub" = "$originGithub"; then
-            contributor='origin'
-        fi
-        branch=${branches[1]}
-    else
-        branch=$2
+    parse_branch_argument "$2" || exit 1
+    if ! test "$pullRequestUrl" = ""; then
+        echo "Pull request: $pullRequestUrl"
     fi
     echo "Working branch: $branch"
 fi
@@ -93,10 +82,12 @@ else
         echo $availableBranches
         echo
 
-        read -p "Which branch do you wish to start from? [develop] " branch
+        read -p "Which branch do you wish to start from (branch, user:branch, pull request, branch or repository URL)? [develop] " branch
         # Empty value is default value which is develop
         if test "$branch" = ""; then
             branch="develop"
+        else
+            parse_branch_argument "$branch" || exit 1
         fi
     else
         echo "$stepsIndex-b / $stepsNb: Selecting the branch $branch as the working branch"
@@ -107,11 +98,14 @@ fi
 cd $targetFolder
 # Check if contributor repository is used
 if ! test "$contributor" = ""; then
-    git remote -v | grep "$contributorGithub" > /dev/null
-    if ! test $? = 0; then
+    # Reuse the remote already pointing to the contributor repository, whatever its name
+    existingRemote=`git remote -v | awk -v url="$contributorGithub" '$2 == url { print $1; exit }'`
+    if test "$existingRemote" = ""; then
         echo "Add new remote repository $contributorGithub"
         git remote add $contributor $contributorGithub
         git fetch $contributor
+    else
+        contributor=$existingRemote
     fi
 fi
 
@@ -120,16 +114,14 @@ if test -d .git; then
     if [ "$branch" != "develop" ] && [ "$branch" != "" ]; then
         # To avoid less pagination
         export PAGER='less -FRSX'
-        git branch -l | grep "$branch" > /dev/null
-        if ! test $? = 0; then
-            remoteRepository='upstream'
-            if ! test "$contributor" = ""; then
-                remoteRepository=$contributor
-            fi
-
-            echo "Checkout branch: $remoteRepository/$branch"
-            git fetch $remoteRepository
-            git checkout -b $branch $remoteRepository/$branch
+        remoteRepository='upstream'
+        if ! test "$contributor" = ""; then
+            remoteRepository=$contributor
+        fi
+        if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+            echo "Checkout branch: $remoteRepository/$remoteBranch"
+            git fetch $remoteRepository $remoteBranch
+            git checkout -b $branch $remoteRepository/$remoteBranch
         else
             echo "Branch $branch already exists locally"
             currentBranch=`git branch --show-current`
@@ -138,6 +130,11 @@ if test -d .git; then
             else
                 echo "Switching to branch $branch"
                 git checkout $branch
+            fi
+            # A pull request may have new commits since the branch was checked out
+            if ! test "$pullRequestUrl" = ""; then
+                echo "Update branch from $remoteRepository/$remoteBranch"
+                git pull --ff-only $remoteRepository $remoteBranch
             fi
         fi
     else

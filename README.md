@@ -25,8 +25,8 @@ Source `aliases.sh` from your shell profile to get the `ps-*` aliases, or call t
 | Command | What it does |
 | --- | --- |
 | `ps-infos [--json] <s>` | Read-only report: URLs, DBs (existence), folder, git branch, PrestaShop version, dump, vhost, hosts entry, HTTP status, PHP versions, BO login. `--json` prints the same data as JSON for scripts and agents |
-| `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, composer install, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup |
-| `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data |
+| `ps-install <s> [branch \| user:branch \| URL]` | Create or update an instance: clone, checkout, composer install, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup |
+| `ps-install-multi-shop <s> [branch \| user:branch \| URL]` | `ps-install` then multistore data |
 | `ps-install-classic <s> [version]` | Build the Classic Edition `<version>` with `smb_edition_builder` (menu of the available versions when omitted or unknown), uninstall the instance if it exists (in the background while the build runs), move the release to the instance folder and `ps-install` it (see below) |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it |
 | `ps-install-multi-shop-data <s>` | Add multistore data through the BO (Playwright) |
@@ -43,6 +43,18 @@ Source `aliases.sh` from your shell profile to get the `ps-*` aliases, or call t
 ps-uninstall qa-1234                      # one instance
 ps-uninstall qa-1234 qa-5678 classic      # three instances, one confirmation
 ```
+
+The branch argument of `ps-install` (also accepted at the branch prompt) takes one of these forms:
+
+| Form | Example |
+| --- | --- |
+| Upstream branch | `9.2.x` |
+| Fork branch | `jolelievre:feature-branch` (repository named `PrestaShop`) |
+| Pull request URL | `https://github.com/PrestaShop/PrestaShop/pull/43282` |
+| GitHub branch URL | `https://github.com/jolelievre/PrestaShop/tree/feature-branch` |
+| Repository URL, SSH or HTTPS | `git@github.com:jolelievre/PrestaShop.git#feature-branch`, `https://github.com/jolelievre/PrestaShop` |
+
+A PR URL is resolved with `gh` to its head repository and branch, a repository URL without `#branch` uses the repository default branch (read with `gh`). Other URLs (another host, `ssh://`) are refused. The fork is added as a remote (or the existing remote with the same SSH URL is reused) and the branch checked out, or switched to when it already exists locally; for a PR it is also fast-forwarded. A fork branch named like a base branch (`develop`, `9.1.x`, ...) is checked out locally as `<user>-<branch>`.
 
 When no suffix is given, the scripts detect it from the current folder if it is inside an instance (`~/www/prestashop-<s>/...`), otherwise they ask for it. Without a terminal an empty suffix aborts.
 

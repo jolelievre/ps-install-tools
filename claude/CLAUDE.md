@@ -32,8 +32,8 @@ Aliases from `ps-install-tools/aliases.sh`, also callable by full path `~/dev/ps
 | Command | What it does | Notes |
 | --- | --- | --- |
 | `ps-infos [--json] <s>` | Report on an instance, JSON with `--json` | read-only, safe anytime |
-| `ps-install <s> [branch \| user:branch]` | Create or update an instance: clone, checkout, `composer install`, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup | On an existing instance the DB is dropped and reinstalled. sudo only when the vhost or hosts entry is new |
-| `ps-install-multi-shop <s> [branch]` | `ps-install` then multistore data | |
+| `ps-install <s> [branch \| user:branch \| URL]` | Create or update an instance: clone, checkout, `composer install`, assets build, `tests/UI/.env`, vhost, `/etc/hosts`, DB install, dump, cache warmup | On an existing instance the DB is dropped and reinstalled. sudo only when the vhost or hosts entry is new |
+| `ps-install-multi-shop <s> [branch \| user:branch \| URL]` | `ps-install` then multistore data | |
 | `ps-install-classic <s> [version]` | Build the Classic Edition `<version>` with `~/dev/smb_edition_builder` (`_dev/classic-config/fr-FR/config_classic_<version>.yml`), uninstall the instance if it exists (in the background while the build runs), move the release to the instance folder, `ps-install` | Always pass the version: without a terminal a missing or unknown version lists the available ones and aborts (in a terminal an arrow-key menu is shown). Long: the build takes many minutes. sudo when an instance is replaced or the vhost is new. Addons credentials and GitHub token come from `config.yml` |
 | `ps-install-data <s>` | Drop and reinstall the DB with fixtures, then dump it | DB only |
 | `ps-install-multi-shop-data <s>` | Add multistore data through the BO (Playwright) | |
@@ -67,5 +67,5 @@ Behaviour when an agent runs them (no terminal, stdin is `/dev/null`):
 
 - The shop is not in Docker: the served directory is the instance folder (third argument of `pick-run-dir.sh`). FO and BO URLs as above.
 - Switching between the code before and after the PR: `git checkout` in the instance, then `bin/console cache:clear`; no Apache restart needed (opcache revalidates). For a PR that changes the DB: `ps-backup` before, `ps-reset` to go back.
-- To QA without disturbing a working instance, spawn a dedicated one: `ps-install qa-<pr> <contributor>:<branch>`, then `ps-uninstall qa-<pr>` at the end (with confirmation).
+- To QA without disturbing a working instance, spawn a dedicated one: `ps-install qa-<pr> <PR URL>` (or `<contributor>:<branch>`), then `ps-uninstall qa-<pr>` at the end (with confirmation).
 - `gh` is authenticated, node comes from nvm and is on PATH in the agent shell. Run directories go under `~/prestashop-pr-qa/`.
